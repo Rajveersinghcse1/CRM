@@ -1,9 +1,8 @@
 import Image from "next/image";
 import { LogOut } from "lucide-react";
-import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton, UserButton } from "@clerk/nextjs";
 import { getUserRole } from "@/app/actions/wexlogic-actions";
-import { getUserDisplayName } from "@/utils/auth";
+import { getCurrentUser, getUserDisplayName } from "@/utils/auth";
 import { MobileNav } from "./components/MobileNav";
 import { SidebarNav } from "./components/SidebarNav";
 
@@ -14,7 +13,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const displayName = getUserDisplayName(user);
   const role = await getUserRole();
 

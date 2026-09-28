@@ -3,21 +3,26 @@
 // Connects to Supabase PostgreSQL with automated fallback to persistent store
 // ==============================================================================
 
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { currentUser } from "@clerk/nextjs/server";
+import { cache } from "react";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
+import { getCurrentUser } from "@/utils/auth";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ouhspvghkibefdxpbhsp.supabase.co";
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    "sb_publishable_3OW5PKsiPeVn49gQV34lfQ_aTVr3LVK";
-  return createSupabaseClient(url, key, {
-    auth: { persistSession: false },
-  });
+let _supabaseClient: SupabaseClient<any, "public", any> | null = null;
+function getSupabase(): SupabaseClient<any, "public", any> {
+  if (!_supabaseClient) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ouhspvghkibefdxpbhsp.supabase.co";
+    const key =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      "sb_publishable_3OW5PKsiPeVn49gQV34lfQ_aTVr3LVK";
+    _supabaseClient = createSupabaseClient(url, key, {
+      auth: { persistSession: false },
+    });
+  }
+  return _supabaseClient;
 }
 import type {
   Company,
@@ -169,7 +174,7 @@ async function saveStore(store: CrmStore): Promise<void> {
 // ==============================================================================
 
 // --- COMPANIES ---
-export async function getCompanies(): Promise<Company[]> {
+export const getCompanies = cache(async (): Promise<Company[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase.from("companies").select("*").order("name");
@@ -179,7 +184,7 @@ export async function getCompanies(): Promise<Company[]> {
   }
   const store = await getStore();
   return store.companies;
-}
+});
 
 export async function createCompany(data: Omit<Company, "id" | "created_at" | "updated_at">): Promise<Company> {
   const id = crypto.randomUUID();
@@ -231,7 +236,7 @@ export async function deleteCompany(id: string): Promise<boolean> {
 }
 
 // --- CLIENTS ---
-export async function getClients(): Promise<Client[]> {
+export const getClients = cache(async (): Promise<Client[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -244,9 +249,9 @@ export async function getClients(): Promise<Client[]> {
   }
   const store = await getStore();
   return store.clients;
-}
+});
 
-export async function getClientById(id: string): Promise<Client | null> {
+export const getClientById = cache(async (id: string): Promise<Client | null> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -260,10 +265,10 @@ export async function getClientById(id: string): Promise<Client | null> {
   }
   const clients = await getClients();
   return clients.find((c) => c.id === id) || null;
-}
+});
 
 export async function createClient(data: Partial<Client>): Promise<Client> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -355,7 +360,7 @@ export async function deleteClient(id: string): Promise<boolean> {
 }
 
 // --- LEADS & CONVERSION ---
-export async function getLeads(): Promise<Lead[]> {
+export const getLeads = cache(async (): Promise<Lead[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -368,9 +373,9 @@ export async function getLeads(): Promise<Lead[]> {
   }
   const store = await getStore();
   return store.leads;
-}
+});
 
-export async function getLeadById(id: string): Promise<Lead | null> {
+export const getLeadById = cache(async (id: string): Promise<Lead | null> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase.from("leads").select("*").eq("id", id).single();
@@ -380,10 +385,10 @@ export async function getLeadById(id: string): Promise<Lead | null> {
   }
   const leads = await getLeads();
   return leads.find((l) => l.id === id) || null;
-}
+});
 
 export async function createLead(data: Partial<Lead>): Promise<Lead> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -557,7 +562,7 @@ export async function convertLeadToClient(
 }
 
 // --- DEALS ---
-export async function getDeals(): Promise<Deal[]> {
+export const getDeals = cache(async (): Promise<Deal[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -576,10 +581,10 @@ export async function getDeals(): Promise<Deal[]> {
     client: clients.find((c) => c.id === d.client_id) || null,
     service: services.find((s) => s.id === d.service_id) || null,
   }));
-}
+});
 
 export async function createDeal(data: Partial<Deal>): Promise<Deal> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -666,7 +671,7 @@ export async function deleteDeal(id: string): Promise<boolean> {
 }
 
 // --- SERVICES ---
-export async function getServices(): Promise<Service[]> {
+export const getServices = cache(async (): Promise<Service[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase.from("services").select("*").order("name");
@@ -676,10 +681,10 @@ export async function getServices(): Promise<Service[]> {
   }
   const store = await getStore();
   return store.services;
-}
+});
 
 // --- PROJECTS & CATEGORIES ---
-export async function getProjects(): Promise<Project[]> {
+export const getProjects = cache(async (): Promise<Project[]> => {
   let rawProjects: Project[] = [];
   try {
     const supabase = getSupabase();
@@ -701,8 +706,10 @@ export async function getProjects(): Promise<Project[]> {
     }));
   }
 
-  const expenses = await getExpenses();
-  const payments = await getClientPayments();
+  const [expenses, payments] = await Promise.all([
+    getExpenses(),
+    getClientPayments(),
+  ]);
 
   return rawProjects.map((proj) => {
     const projectExpenses = expenses.filter((e) => e.project_id === proj.id);
@@ -728,18 +735,57 @@ export async function getProjects(): Promise<Project[]> {
       remainingBudget,
     };
   });
-}
+});
 
-export async function getProjectById(id: string): Promise<Project | null> {
+export const getProjectById = cache(async (id: string): Promise<Project | null> => {
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*, client:clients(*), company:companies(*)")
+      .eq("id", id)
+      .single();
+
+    if (!error && data) {
+      const proj = data as Project;
+      const [categories, expenses, payments] = await Promise.all([
+        getProjectCategories(id),
+        getExpenses(id),
+        getClientPayments(undefined, id),
+      ]);
+      const totalActualCost = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+      const totalCollected = payments
+        .filter((p) => p.status === "completed")
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+      const totalOutstanding = Math.max(0, proj.project_value - totalCollected);
+      const grossProfit = calcGrossProfit(proj.project_value, totalActualCost);
+      const grossMargin = calcGrossMarginPct(proj.project_value, totalActualCost);
+      const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
+
+      return {
+        ...proj,
+        categories,
+        totalActualCost,
+        totalCollected,
+        totalOutstanding,
+        grossProfit,
+        grossMargin,
+        remainingBudget,
+      };
+    }
+  } catch (err) {
+    console.warn("Supabase getProjectById fallback:", err);
+  }
+
   const projects = await getProjects();
   const project = projects.find((p) => p.id === id);
   if (!project) return null;
   project.categories = await getProjectCategories(id);
   return project;
-}
+});
 
 export async function createProject(data: Partial<Project>): Promise<Project> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -866,7 +912,7 @@ export async function uploadPdfToSupabaseStorage(
   }
 }
 
-export async function getProjectCategories(projectId: string): Promise<ProjectCategory[]> {
+export const getProjectCategories = cache(async (projectId: string): Promise<ProjectCategory[]> => {
   let categories: ProjectCategory[] = [];
   try {
     const supabase = getSupabase();
@@ -900,7 +946,7 @@ export async function getProjectCategories(projectId: string): Promise<ProjectCa
       utilization_pct,
     };
   });
-}
+});
 
 export async function createProjectCategory(data: {
   project_id: string;
@@ -948,7 +994,7 @@ export async function createProjectCategory(data: {
 }
 
 // --- EXPENSES ---
-export async function getExpenses(projectId?: string): Promise<Expense[]> {
+export const getExpenses = cache(async (projectId?: string): Promise<Expense[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase
@@ -972,10 +1018,10 @@ export async function getExpenses(projectId?: string): Promise<Expense[]> {
     category: store.project_categories.find((c) => c.id === e.category_id) || null,
     vendor: store.vendors.find((v) => v.id === e.vendor_id) || null,
   }));
-}
+});
 
 export async function createExpense(data: Partial<Expense>): Promise<Expense> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1055,7 +1101,7 @@ export async function deleteExpense(id: string): Promise<boolean> {
 }
 
 
-export async function getVendors(): Promise<Vendor[]> {
+export const getVendors = cache(async (): Promise<Vendor[]> => {
   let vendors: Vendor[] = [];
   try {
     const supabase = getSupabase();
@@ -1085,10 +1131,10 @@ export async function getVendors(): Promise<Vendor[]> {
       total_pending,
     };
   });
-}
+});
 
 export async function createVendor(data: Partial<Vendor>): Promise<Vendor> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1147,7 +1193,7 @@ export async function deleteVendor(id: string): Promise<boolean> {
   return true;
 }
 
-export async function getVendorBills(vendorId?: string, projectId?: string): Promise<VendorBill[]> {
+export const getVendorBills = cache(async (vendorId?: string, projectId?: string): Promise<VendorBill[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase
@@ -1173,10 +1219,10 @@ export async function getVendorBills(vendorId?: string, projectId?: string): Pro
     vendor: store.vendors.find((v) => v.id === b.vendor_id) || null,
     project: store.projects.find((p) => p.id === b.project_id) || null,
   }));
-}
+});
 
 export async function createVendorBill(data: Partial<VendorBill>): Promise<VendorBill> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1256,7 +1302,7 @@ export async function deleteVendorBill(id: string): Promise<boolean> {
 }
 
 
-export async function getInvoices(clientId?: string, projectId?: string): Promise<Invoice[]> {
+export const getInvoices = cache(async (clientId?: string, projectId?: string): Promise<Invoice[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase
@@ -1283,9 +1329,9 @@ export async function getInvoices(clientId?: string, projectId?: string): Promis
     project: store.projects.find((p) => p.id === inv.project_id) || null,
     items: store.invoice_items.filter((item) => item.invoice_id === inv.id),
   }));
-}
+});
 
-export async function getInvoiceById(id: string): Promise<Invoice | null> {
+export const getInvoiceById = cache(async (id: string): Promise<Invoice | null> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -1300,13 +1346,13 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
 
   const invoices = await getInvoices();
   return invoices.find((i) => i.id === id) || null;
-}
+});
 
 export async function createInvoice(
   data: Partial<Invoice>,
   items: Array<{ description: string; quantity: number; unit_price: number }> = []
 ): Promise<Invoice> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1424,10 +1470,10 @@ export async function deleteInvoice(id: string): Promise<boolean> {
   return true;
 }
 
-export async function getClientPayments(
+export const getClientPayments = cache(async (
   clientId?: string,
   projectId?: string
-): Promise<ClientPayment[]> {
+): Promise<ClientPayment[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase
@@ -1454,10 +1500,10 @@ export async function getClientPayments(
     project: store.projects.find((proj) => proj.id === p.project_id) || null,
     invoice: store.invoices.find((inv) => inv.id === p.invoice_id) || null,
   }));
-}
+});
 
 export async function createClientPayment(data: Partial<ClientPayment>): Promise<ClientPayment> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1522,7 +1568,7 @@ export async function createClientPayment(data: Partial<ClientPayment>): Promise
 }
 
 // --- TASKS ---
-export async function getTasks(projectId?: string): Promise<Task[]> {
+export const getTasks = cache(async (projectId?: string): Promise<Task[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase
@@ -1545,10 +1591,10 @@ export async function getTasks(projectId?: string): Promise<Task[]> {
     project: store.projects.find((p) => p.id === t.project_id) || null,
     category: store.project_categories.find((c) => c.id === t.category_id) || null,
   }));
-}
+});
 
 export async function createTask(data: Partial<Task>): Promise<Task> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1638,11 +1684,11 @@ export async function updateTaskStatus(id: string, status: Task["status"]): Prom
 }
 
 // --- ACTIVITIES ---
-export async function getActivities(filter?: {
+export const getActivities = cache(async (filter?: {
   clientId?: string;
   projectId?: string;
   leadId?: string;
-}): Promise<Activity[]> {
+}): Promise<Activity[]> => {
   try {
     const supabase = getSupabase();
     let query = supabase.from("activities").select("*").order("activity_date", { ascending: false });
@@ -1661,11 +1707,16 @@ export async function getActivities(filter?: {
   if (filter?.clientId) list = list.filter((a) => a.client_id === filter.clientId);
   if (filter?.projectId) list = list.filter((a) => a.project_id === filter.projectId);
   if (filter?.leadId) list = list.filter((a) => a.lead_id === filter.leadId);
-  return list;
-}
+  return list.map((a) => ({
+    ...a,
+    client: store.clients.find((c) => c.id === a.client_id) || null,
+    lead: store.leads.find((l) => l.id === a.lead_id) || null,
+    project: store.projects.find((p) => p.id === a.project_id) || null,
+  }));
+});
 
 export async function createActivity(data: Partial<Activity>): Promise<Activity> {
-  const user = await currentUser();
+  const user = await getCurrentUser();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -1722,7 +1773,7 @@ export async function deleteActivity(id: string): Promise<boolean> {
 }
 
 
-export async function getAuditLogs(limit = 100): Promise<AuditLog[]> {
+export const getAuditLogs = cache(async (limit = 100): Promise<AuditLog[]> => {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -1753,7 +1804,7 @@ export async function getAuditLogs(limit = 100): Promise<AuditLog[]> {
 
   const store = await getStore();
   return store.audit_logs.slice(0, limit);
-}
+});
 
 export async function logAuditAction(
   action: string,
@@ -1766,7 +1817,7 @@ export async function logAuditAction(
   try {
     let user: any = null;
     try {
-      user = await currentUser();
+      user = await getCurrentUser();
     } catch {
       // currentUser may not be available outside request context
     }
@@ -1889,9 +1940,9 @@ export async function createNotification(
 // 14. PROFITABILITY & EXECUTIVE DASHBOARD PULSE
 // ==============================================================================
 
-export async function getProjectProfitability(
+export const getProjectProfitability = cache(async (
   projectId: string
-): Promise<ProjectProfitabilitySummary | null> {
+): Promise<ProjectProfitabilitySummary | null> => {
   const project = await getProjectById(projectId);
   if (!project) return null;
 
@@ -1932,7 +1983,7 @@ export async function getProjectProfitability(
     status: project.status,
     categories: categoryBreakdown,
   };
-}
+});
 
 export interface ExecutiveDashboardData {
   totalLeads: number;
@@ -1956,7 +2007,7 @@ export interface ExecutiveDashboardData {
   todayActivities: Activity[];
 }
 
-export async function getExecutiveDashboardData(): Promise<ExecutiveDashboardData> {
+export const getExecutiveDashboardData = cache(async (): Promise<ExecutiveDashboardData> => {
   const [projects, leads, clients, payments, expenses, activities] = await Promise.all([
     getProjects(),
     getLeads(),
@@ -1980,10 +2031,13 @@ export async function getExecutiveDashboardData(): Promise<ExecutiveDashboardDat
   const grossProfit = calcGrossProfit(totalPipeline, projectCosts);
   const grossMarginPct = calcGrossMarginPct(totalPipeline, projectCosts);
 
-  // Budget Alerts (utilization >= 80%)
+  // Budget Alerts (utilization >= 80%) — fetch all project categories concurrently in parallel
   const budgetAlerts: ExecutiveDashboardData["budgetAlerts"] = [];
-  for (const proj of projects) {
-    const cats = await getProjectCategories(proj.id);
+  const projectCats = await Promise.all(
+    projects.map((proj) => getProjectCategories(proj.id))
+  );
+  projects.forEach((proj, idx) => {
+    const cats = projectCats[idx] || [];
     for (const c of cats) {
       if ((c.utilization_pct || 0) >= 80) {
         budgetAlerts.push({
@@ -1996,7 +2050,7 @@ export async function getExecutiveDashboardData(): Promise<ExecutiveDashboardDat
         });
       }
     }
-  }
+  });
 
   return {
     totalLeads,
@@ -2012,4 +2066,4 @@ export async function getExecutiveDashboardData(): Promise<ExecutiveDashboardDat
     recentPayments: payments.slice(0, 5),
     todayActivities: activities.slice(0, 5),
   };
-}
+});

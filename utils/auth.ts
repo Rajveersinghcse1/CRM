@@ -1,4 +1,5 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { cache } from "react";
+import { currentUser, auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 export type CrmRole = "admin" | "manager" | "sales" | "employee" | "viewer";
@@ -14,11 +15,37 @@ export const VALID_ROLES: readonly CrmRole[] = [
 export function isValidRole(role: unknown): role is CrmRole {
   return typeof role === "string" && VALID_ROLES.includes(role as CrmRole);
 }
-export async function getCurrentUser() {
-  return await currentUser();
-}
-export async function getCurrentUserRole(): Promise<CrmRole | null> {
-  const user = await currentUser();
+
+// Request-scoped deduplicated Clerk user fetch (at most 1 network call per render pass)
+export const getCurrentUser = cache(async () => {
+  try {
+    return await currentUser();
+  } catch (err: unknown) {
+    const error = err as { digest?: string; message?: string };
+    if (error?.digest === "DYNAMIC_SERVER_USAGE" || error?.message?.includes("Dynamic server usage")) {
+      throw err;
+    }
+    console.warn("Clerk currentUser fetch failed:", err);
+    return null;
+  }
+});
+
+// Request-scoped deduplicated role check — checks local JWT claims first (0ms), falls back to cached currentUser
+export const getCurrentUserRole = cache(async (): Promise<CrmRole | null> => {
+  // Fast Path 1: Check session claims directly from the JWT (0ms network cost)
+  try {
+    const session = await auth();
+    if (!session.userId) return null;
+    const metadataRole = (session.sessionClaims?.metadata as { role?: string } | undefined)?.role;
+    if (isValidRole(metadataRole)) {
+      return metadataRole;
+    }
+  } catch {
+    // auth() may fail in some edge runtime contexts, continue to fallback
+  }
+
+  // Fast Path 2: Use request-cached user
+  const user = await getCurrentUser();
   if (!user) return null;
 
   const rawRole = user.publicMetadata?.role;
@@ -32,19 +59,19 @@ export async function getCurrentUserRole(): Promise<CrmRole | null> {
     return "admin";
   }
 
-  // If role is uninitialized or unassigned, default safely to "employee" (not admin)
+  // Default safely to "employee"
   return "employee";
-}
+});
 
-export async function requireAuth() {
-  const user = await currentUser();
+export const requireAuth = cache(async () => {
+  const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
   return user;
-}
+});
 
-export async function requireRole(allowedRoles: CrmRole | CrmRole[]) {
+export const requireRole = cache(async (allowedRoles: CrmRole | CrmRole[]) => {
   const user = await requireAuth();
   const role = (await getCurrentUserRole()) || "employee";
 
@@ -54,14 +81,14 @@ export async function requireRole(allowedRoles: CrmRole | CrmRole[]) {
   }
 
   return { user, role };
-}
+});
 
-export async function hasRole(allowedRoles: CrmRole | CrmRole[]): Promise<boolean> {
+export const hasRole = cache(async (allowedRoles: CrmRole | CrmRole[]): Promise<boolean> => {
   const role = await getCurrentUserRole();
   if (!role) return false;
   const allowed = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
   return allowed.includes(role);
-}
+});
 
 // Granular permission helpers
 export function canViewUsers(role: CrmRole | null): boolean {
