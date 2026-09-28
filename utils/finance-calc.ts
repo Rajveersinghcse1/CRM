@@ -77,3 +77,60 @@ export const getBudgetHealthBadge = (status: BudgetHealthStatus) => {
       };
   }
 };
+
+export const numberToIndianWords = (num: number | string | null | undefined): string => {
+  const n = Math.floor(Math.abs(Number(num) || 0));
+  if (n === 0) return "Zero Rupees Only";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+    "Seventeen", "Eighteen", "Nineteen"
+  ];
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+  ];
+
+  function convertTwoDigits(val: number): string {
+    if (val < 20) return ones[val];
+    const unit = val % 10;
+    return tens[Math.floor(val / 10)] + (unit ? " " + ones[unit] : "");
+  }
+
+  function convertThreeDigits(val: number): string {
+    let result = "";
+    if (val >= 100) {
+      result += ones[Math.floor(val / 100)] + " Hundred";
+      val %= 100;
+      if (val > 0) result += " ";
+    }
+    if (val > 0) {
+      result += convertTwoDigits(val);
+    }
+    return result;
+  }
+
+  let words = "";
+  const crore = Math.floor(n / 10000000);
+  let rem = n % 10000000;
+  const lakh = Math.floor(rem / 100000);
+  rem = rem % 100000;
+  const thousand = Math.floor(rem / 1000);
+  rem = rem % 1000;
+  const hundreds = rem;
+
+  if (crore > 0) {
+    words += convertThreeDigits(crore) + " Crore ";
+  }
+  if (lakh > 0) {
+    words += convertTwoDigits(lakh) + " Lakh ";
+  }
+  if (thousand > 0) {
+    words += convertTwoDigits(thousand) + " Thousand ";
+  }
+  if (hundreds > 0) {
+    words += convertThreeDigits(hundreds) + " ";
+  }
+
+  return words.trim() + " Rupees Only";
+};

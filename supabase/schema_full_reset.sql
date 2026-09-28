@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- WEXLOGIC CRM — Complete Clean-Slate Database Schema Reset
 -- Target: Supabase / PostgreSQL
 -- Description: Safely drops all legacy tables, types, and functions with CASCADE,
@@ -174,6 +174,11 @@ CREATE TABLE public.projects (
   status TEXT NOT NULL DEFAULT 'planned', -- 'planned', 'active', 'on_hold', 'completed', 'cancelled'
   priority TEXT NOT NULL DEFAULT 'medium', -- 'low', 'medium', 'high', 'urgent'
   notes TEXT,
+  quotation_number TEXT,
+  quotation_date DATE,
+  quotation_expiry_date DATE,
+  quotation_pdf_url TEXT,
+  quotation_data JSONB,
   created_by TEXT, -- Clerk user ID
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -278,6 +283,8 @@ CREATE TABLE public.invoices (
   status TEXT NOT NULL DEFAULT 'draft', -- 'draft', 'issued', 'partially_paid', 'paid', 'overdue', 'cancelled'
   notes TEXT,
   attachment_url TEXT,
+  pdf_url TEXT,
+  quotation_number TEXT,
   created_by TEXT, -- Clerk user ID
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -407,6 +414,8 @@ CREATE INDEX idx_vendor_bills_vendor ON public.vendor_bills(vendor_id);
 CREATE INDEX idx_vendor_bills_project ON public.vendor_bills(project_id);
 CREATE INDEX idx_invoices_client ON public.invoices(client_id);
 CREATE INDEX idx_invoices_project ON public.invoices(project_id);
+CREATE INDEX idx_projects_quotation_number ON public.projects(quotation_number);
+CREATE INDEX idx_invoices_quotation_number ON public.invoices(quotation_number);
 CREATE INDEX idx_invoice_items_invoice ON public.invoice_items(invoice_id);
 CREATE INDEX idx_payments_client ON public.client_payments(client_id);
 CREATE INDEX idx_payments_project ON public.client_payments(project_id);
@@ -471,3 +480,47 @@ VALUES
   ('Photography', 'Creative', 'Event coverage & high-resolution media deliverables', 40000.00, TRUE),
   ('Video Production', 'Creative', 'Teasers, recap films & live cinematography coverage', 70000.00, TRUE)
 ON CONFLICT DO NOTHING;
+
+-- ==============================================================================
+-- STEP 6: SUPABASE STORAGE BUCKETS & POLICIES (QUOTATIONS, INVOICES, DOCUMENTS)
+-- ==============================================================================
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES 
+  ('quotations', 'quotations', true, 10485760, ARRAY['application/pdf']),
+  ('invoices', 'invoices', true, 10485760, ARRAY['application/pdf']),
+  ('documents', 'documents', true, 20971520, NULL)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Quotations (RLS is already pre-enabled by Supabase on storage.objects)
+DROP POLICY IF EXISTS "Public read access on quotations" ON storage.objects;
+CREATE POLICY "Public read access on quotations" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'quotations');
+DROP POLICY IF EXISTS "Allow upload to quotations" ON storage.objects;
+CREATE POLICY "Allow upload to quotations" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'quotations');
+DROP POLICY IF EXISTS "Allow update on quotations" ON storage.objects;
+CREATE POLICY "Allow update on quotations" ON storage.objects FOR UPDATE TO anon, authenticated USING (bucket_id = 'quotations');
+DROP POLICY IF EXISTS "Allow delete on quotations" ON storage.objects;
+CREATE POLICY "Allow delete on quotations" ON storage.objects FOR DELETE TO anon, authenticated USING (bucket_id = 'quotations');
+
+-- Invoices
+DROP POLICY IF EXISTS "Public read access on invoices" ON storage.objects;
+CREATE POLICY "Public read access on invoices" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'invoices');
+DROP POLICY IF EXISTS "Allow upload to invoices" ON storage.objects;
+CREATE POLICY "Allow upload to invoices" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'invoices');
+DROP POLICY IF EXISTS "Allow update on invoices" ON storage.objects;
+CREATE POLICY "Allow update on invoices" ON storage.objects FOR UPDATE TO anon, authenticated USING (bucket_id = 'invoices');
+DROP POLICY IF EXISTS "Allow delete on invoices" ON storage.objects;
+CREATE POLICY "Allow delete on invoices" ON storage.objects FOR DELETE TO anon, authenticated USING (bucket_id = 'invoices');
+
+-- Documents
+DROP POLICY IF EXISTS "Public read access on documents" ON storage.objects;
+CREATE POLICY "Public read access on documents" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'documents');
+DROP POLICY IF EXISTS "Allow upload to documents" ON storage.objects;
+CREATE POLICY "Allow upload to documents" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'documents');
+DROP POLICY IF EXISTS "Allow update on documents" ON storage.objects;
+CREATE POLICY "Allow update on documents" ON storage.objects FOR UPDATE TO anon, authenticated USING (bucket_id = 'documents');
+DROP POLICY IF EXISTS "Allow delete on documents" ON storage.objects;
+CREATE POLICY "Allow delete on documents" ON storage.objects FOR DELETE TO anon, authenticated USING (bucket_id = 'documents');

@@ -1,7 +1,15 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher(["/", "/login(.*)", "/sign-up(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/login(.*)",
+  "/sign-up(.*)",
+  "/dashboard/projects/(.*)/quotation(.*)",
+  "/dashboard/invoices/(.*)/print(.*)",
+  "/quotation(.*)",
+  "/invoice(.*)",
+]);
 const isAdminRoute = createRouteMatcher([
   "/dashboard/users(.*)",
   "/admin(.*)",

@@ -28,9 +28,9 @@ export default async function DashboardLayout({
   const activeBadge = roleBadges[role || "employee"] || roleBadges.employee;
 
   return (
-    <div className="flex h-screen bg-[#FFFDF5] text-[#1E293B] flex-col md:flex-row overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#FFFDF5] text-[#1E293B] flex-col md:flex-row overflow-hidden font-sans print:h-auto print:overflow-visible print:bg-white">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 bg-white border-r-2 border-[#1E293B] relative flex-col shrink-0 shadow-pop-sm z-10">
+      <aside className="hidden md:flex w-64 bg-white border-r-2 border-[#1E293B] relative flex-col shrink-0 shadow-pop-sm z-10 print:hidden">
         {/* Brand Header */}
         <div className="flex h-20 shrink-0 items-center justify-center border-b-2 border-[#1E293B] bg-[#FFFDF5] px-4">
           <WexLogicLogo href="/dashboard" size="md" />
@@ -75,13 +75,15 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FFFDF5]">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FFFDF5] print:overflow-visible print:h-auto print:bg-white">
         {/* Mobile Navigation Header */}
-        <MobileNav email={displayName} role={role} />
+        <div className="print:hidden">
+          <MobileNav email={displayName} role={role} />
+        </div>
 
         {/* Main Scrollable View */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-8 max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto print:overflow-visible print:h-auto">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto print:p-0 print:m-0 print:max-w-none">
             {children}
           </div>
         </main>

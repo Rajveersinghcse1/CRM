@@ -767,6 +767,11 @@ export async function createProject(data: Partial<Project>): Promise<Project> {
     status: data.status || "planned",
     priority: data.priority || "medium",
     notes: data.notes || null,
+    quotation_number: data.quotation_number || null,
+    quotation_date: data.quotation_date || null,
+    quotation_expiry_date: data.quotation_expiry_date || null,
+    quotation_pdf_url: data.quotation_pdf_url || null,
+    quotation_data: data.quotation_data || null,
     created_by: user?.id || null,
     created_at: now,
     updated_at: now,
@@ -809,6 +814,56 @@ export async function deleteProject(id: string): Promise<boolean> {
   const idx = store.projects.findIndex((p) => p.id === id);
   if (idx !== -1) { const removed = store.projects.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "project", id, removed, null); }
   return true;
+}
+
+export async function saveProjectQuotation(
+  projectId: string,
+  quotationData: {
+    quotationNumber: string;
+    quotationDate?: string;
+    expiryDate?: string;
+    data?: any;
+    pdfUrl?: string | null;
+  }
+): Promise<Project | null> {
+  const updatePayload: Partial<Project> = {
+    quotation_number: quotationData.quotationNumber,
+    quotation_date: quotationData.quotationDate || null,
+    quotation_expiry_date: quotationData.expiryDate || null,
+    quotation_data: quotationData.data || null,
+  };
+  if (quotationData.pdfUrl) {
+    updatePayload.quotation_pdf_url = quotationData.pdfUrl;
+  }
+  return await updateProject(projectId, updatePayload);
+}
+
+export async function uploadPdfToSupabaseStorage(
+  bucket: "quotations" | "invoices" | "documents",
+  filePath: string,
+  fileBuffer: Buffer | Uint8Array,
+  contentType: string = "application/pdf"
+): Promise<string | null> {
+  try {
+    const supabase = getSupabase();
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, fileBuffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.warn(`Supabase Storage upload to bucket '${bucket}' failed:`, uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    return data?.publicUrl || null;
+  } catch (err) {
+    console.warn("Supabase Storage error:", err);
+    return null;
+  }
 }
 
 export async function getProjectCategories(projectId: string): Promise<ProjectCategory[]> {
@@ -1230,6 +1285,23 @@ export async function getInvoices(clientId?: string, projectId?: string): Promis
   }));
 }
 
+export async function getInvoiceById(id: string): Promise<Invoice | null> {
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("invoices")
+      .select("*, client:clients(*), project:projects(*), items:invoice_items(*)")
+      .eq("id", id)
+      .single();
+    if (!error && data) return data as Invoice;
+  } catch (err) {
+    console.warn("Supabase getInvoiceById fallback:", err);
+  }
+
+  const invoices = await getInvoices();
+  return invoices.find((i) => i.id === id) || null;
+}
+
 export async function createInvoice(
   data: Partial<Invoice>,
   items: Array<{ description: string; quantity: number; unit_price: number }> = []
@@ -1274,6 +1346,9 @@ export async function createInvoice(
     amount_paid: 0,
     status: data.status || "issued",
     notes: data.notes || null,
+    attachment_url: data.attachment_url || null,
+    pdf_url: data.pdf_url || data.attachment_url || null,
+    quotation_number: data.quotation_number || null,
     created_by: user?.id || null,
     created_at: now,
     updated_at: now,
@@ -1303,6 +1378,50 @@ export async function createInvoice(
   await saveStore(store);
   await logAuditAction("create", "invoice", newInv.id, null, newInv);
   return newInv;
+}
+
+export async function updateInvoice(
+  id: string,
+  data: Partial<Invoice>
+): Promise<Invoice | null> {
+  const now = new Date().toISOString();
+  try {
+    const supabase = getSupabase();
+    const { data: updated } = await supabase
+      .from("invoices")
+      .update({ ...data, updated_at: now })
+      .eq("id", id)
+      .select()
+      .single();
+    if (updated) return updated as Invoice;
+  } catch (err) {
+    console.warn("Supabase updateInvoice failed:", err);
+  }
+  const store = await getStore();
+  const item = store.invoices.find((i) => i.id === id);
+  if (!item) return null;
+  const prev = { ...item };
+  Object.assign(item, data, { updated_at: now });
+  await saveStore(store);
+  await logAuditAction("update", "invoice", id, prev, item);
+  return item;
+}
+
+export async function deleteInvoice(id: string): Promise<boolean> {
+  try {
+    const supabase = getSupabase();
+    await supabase.from("invoices").delete().eq("id", id);
+  } catch (err) {
+    console.warn("Supabase deleteInvoice failed:", err);
+  }
+  const store = await getStore();
+  const idx = store.invoices.findIndex((i) => i.id === id);
+  if (idx !== -1) {
+    const removed = store.invoices.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "invoice", id, removed, null);
+  }
+  return true;
 }
 
 export async function getClientPayments(

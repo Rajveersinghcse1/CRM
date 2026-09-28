@@ -2,7 +2,7 @@ import { getInvoices, getClients, getProjects } from "@/lib/crm-db";
 import { getCurrentUserRole, canMutateInvoices } from "@/utils/auth";
 import { formatINR } from "@/utils/finance-calc";
 import { InvoiceModal } from "./invoice-modal";
-import { FileText } from "lucide-react";
+import { FileText, Printer } from "lucide-react";
 import Link from "next/link";
 
 export default async function InvoicesPage() {
@@ -88,8 +88,11 @@ export default async function InvoicesPage() {
                 <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Due Date
                 </th>
-                <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-4">
                   Status
+                </th>
+                <th className="px-3 py-4 text-center text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                  Print
                 </th>
               </tr>
             </thead>
@@ -123,19 +126,29 @@ export default async function InvoicesPage() {
                     <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500">
                       {new Date(inv.due_date).toLocaleDateString()}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-right pr-6">
+                    <td className="whitespace-nowrap px-3 py-4 text-right pr-4">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border uppercase tracking-wider shadow-pop-sm ${badge.bg} ${badge.text} ${badge.border}`}
                       >
                         {inv.status.replace("_", " ")}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-center pr-6">
+                      <Link
+                        href={`/dashboard/invoices/${inv.id}/print`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] px-2.5 py-1 text-xs font-black text-[#1E293B] shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+                        title="View and download PDF"
+                      >
+                        <Printer className="h-3.5 w-3.5 text-amber-700" />
+                        PDF
+                      </Link>
+                    </td>
                   </tr>
                 );
               })}
               {invoices.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-sm font-medium text-slate-400">
+                  <td colSpan={8} className="py-12 text-center text-sm font-medium text-slate-400">
                     {canAdd
                       ? 'No client invoices found. Click "Create Invoice" to issue one.'
                       : "No client invoices found."}

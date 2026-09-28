@@ -25,6 +25,8 @@ import {
   updateVendorBill,
   deleteVendorBill,
   createInvoice,
+  updateInvoice,
+  deleteInvoice,
   createClientPayment,
   createTask,
   updateTask,
@@ -35,6 +37,8 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
+  saveProjectQuotation,
+  uploadPdfToSupabaseStorage,
 } from "@/lib/crm-db";
 import { revalidatePath } from "next/cache";
 
@@ -295,4 +299,98 @@ export async function deleteClientAction(id: string) {
   revalidatePath("/dashboard/clients");
   revalidatePath("/dashboard/audit-logs");
 }
+
+export async function updateInvoiceAction(id: string, data: any) {
+  const result = await updateInvoice(id, data);
+  revalidatePath("/dashboard/invoices");
+  revalidatePath(`/dashboard/invoices/${id}`);
+  revalidatePath("/dashboard/audit-logs");
+  return result;
+}
+
+export async function deleteInvoiceAction(id: string) {
+  const result = await deleteInvoice(id);
+  revalidatePath("/dashboard/invoices");
+  revalidatePath("/dashboard/audit-logs");
+  return result;
+}
+
+export async function saveProjectQuotationAction(
+  projectId: string,
+  payload: {
+    quotationNumber: string;
+    quotationDate?: string;
+    expiryDate?: string;
+    data?: any;
+    pdfUrl?: string | null;
+  }
+) {
+  const result = await saveProjectQuotation(projectId, payload);
+  revalidatePath("/dashboard/projects");
+  revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath(`/dashboard/projects/${projectId}/quotation`);
+  revalidatePath("/dashboard/audit-logs");
+  return result;
+}
+
+export async function uploadQuotationPdfAction(
+  projectId: string,
+  formData: FormData
+) {
+  const file = formData.get("file") as File;
+  const quotationNumber = (formData.get("quotationNumber") as string) || "quotation";
+  if (!file) {
+    throw new Error("No file provided");
+  }
+
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const cleanNumber = quotationNumber.replace(/[\/\\]/g, "-");
+  const fileName = `${cleanNumber}_${Date.now()}.pdf`;
+  const storagePath = `${projectId}/${fileName}`;
+
+  const publicUrl = await uploadPdfToSupabaseStorage("quotations", storagePath, buffer, "application/pdf");
+
+  if (publicUrl) {
+    await updateProject(projectId, {
+      quotation_pdf_url: publicUrl,
+      quotation_number: quotationNumber,
+    });
+  }
+
+  revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath(`/dashboard/projects/${projectId}/quotation`);
+  return { publicUrl };
+}
+
+export async function uploadInvoicePdfAction(
+  invoiceId: string,
+  formData: FormData
+) {
+  const file = formData.get("file") as File;
+  const invoiceNumber = (formData.get("invoiceNumber") as string) || "invoice";
+  if (!file) {
+    throw new Error("No file provided");
+  }
+
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const cleanNumber = invoiceNumber.replace(/[\/\\]/g, "-");
+  const fileName = `${cleanNumber}_${Date.now()}.pdf`;
+  const storagePath = `${invoiceId}/${fileName}`;
+
+  const publicUrl = await uploadPdfToSupabaseStorage("invoices", storagePath, buffer, "application/pdf");
+
+  if (publicUrl) {
+    await updateInvoice(invoiceId, {
+      pdf_url: publicUrl,
+      attachment_url: publicUrl,
+    });
+  }
+
+  revalidatePath(`/dashboard/invoices`);
+  revalidatePath(`/dashboard/invoices/${invoiceId}`);
+  return { publicUrl };
+}
+
 

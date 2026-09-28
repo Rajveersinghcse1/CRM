@@ -187,6 +187,11 @@ export interface Project {
   status: ProjectStatus;
   priority: ProjectPriority;
   notes?: string | null;
+  quotation_number?: string | null;
+  quotation_date?: string | null;
+  quotation_expiry_date?: string | null;
+  quotation_pdf_url?: string | null;
+  quotation_data?: any | null;
   created_by?: string | null;
   created_at: string;
   updated_at: string;
@@ -317,6 +322,8 @@ export interface Invoice {
   status: InvoiceStatus;
   notes?: string | null;
   attachment_url?: string | null;
+  pdf_url?: string | null;
+  quotation_number?: string | null;
   created_by?: string | null;
   created_at: string;
   updated_at: string;

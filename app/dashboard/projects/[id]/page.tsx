@@ -23,6 +23,7 @@ import {
   FileText,
   CreditCard,
   AlertTriangle,
+  Printer,
 } from "lucide-react";
 import {
   getCurrentUserRole,
@@ -128,19 +129,25 @@ export default async function ProjectWorkspacePage({
           </div>
 
           {/* Quick Actions Candy Bar */}
-          {(canAddCategory || canAddExpense) && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {canAddCategory && <CategoryModal projectId={project.id} />}
-              {canAddExpense && (
-                <ProjectExpenseModal
-                  projectId={project.id}
-                  clientId={project.client_id}
-                  categories={categories}
-                  vendors={vendors}
-                />
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href={`/dashboard/projects/${project.id}/quotation`}
+              className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1E293B] bg-amber-50 px-3.5 py-2 text-xs font-black text-[#1E293B] shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              title="Generate & Download Quotation PDF"
+            >
+              <Printer className="h-4 w-4 text-amber-700" strokeWidth={2.5} />
+              Quotation PDF
+            </Link>
+            {canAddCategory && <CategoryModal projectId={project.id} />}
+            {canAddExpense && (
+              <ProjectExpenseModal
+                projectId={project.id}
+                clientId={project.client_id}
+                categories={categories}
+                vendors={vendors}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -440,11 +447,21 @@ export default async function ProjectWorkspacePage({
                       <p className="font-bold text-sm text-[#1E293B]">{inv.invoice_number}</p>
                       <p className="text-xs text-slate-500 mt-0.5 font-medium">Due: {new Date(inv.due_date).toLocaleDateString()}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1">
                       <p className="text-sm font-black text-[#1E293B]">{formatINR(inv.total)}</p>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-300">
-                        Paid: {formatINR(inv.amount_paid)}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-300">
+                          Paid: {formatINR(inv.amount_paid)}
+                        </span>
+                        <Link
+                          href={`/dashboard/invoices/${inv.id}/print`}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300 transition-colors"
+                          title="Print / View Invoice PDF"
+                        >
+                          <Printer className="h-3 w-3" />
+                          PDF
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 ))}
