@@ -1,8 +1,7 @@
 import Image from "next/image";
 import { LogOut } from "lucide-react";
 import { SignOutButton, UserButton } from "@clerk/nextjs";
-import { getUserRole } from "@/app/actions/wexlogic-actions";
-import { getCurrentUser, getUserDisplayName } from "@/utils/auth";
+import { getCurrentUser, getUserDisplayName, getCurrentUserRole } from "@/utils/auth";
 import { MobileNav } from "./components/MobileNav";
 import { SidebarNav } from "./components/SidebarNav";
 
@@ -15,7 +14,7 @@ export default async function DashboardLayout({
 }) {
   const user = await getCurrentUser();
   const displayName = getUserDisplayName(user);
-  const role = await getUserRole();
+  const role = await getCurrentUserRole();
 
   const roleBadges: Record<string, { bg: string; text: string; border: string; label: string }> = {
     admin: { bg: "bg-purple-100", text: "text-purple-900", border: "border-purple-400", label: "Admin" },

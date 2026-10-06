@@ -151,23 +151,60 @@ const INITIAL_SEED: CrmStore = {
   notifications: [],
 };
 
-// Ensure local persistence store exists
+let _memStore: CrmStore | null = null;
+
 async function getStore(): Promise<CrmStore> {
+  if (_memStore) return _memStore;
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     const content = await fs.readFile(STORE_PATH, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    // If not exists, save initial seed
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(STORE_PATH, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
-    return INITIAL_SEED;
+    const parsed = JSON.parse(content);
+    const loadedStore: CrmStore = {
+      ...INITIAL_SEED,
+      ...parsed,
+      companies: parsed.companies || [],
+      clients: parsed.clients || [],
+      services: parsed.services || INITIAL_SEED.services,
+      leads: parsed.leads || [],
+      deals: parsed.deals || [],
+      projects: parsed.projects || [],
+      project_categories: parsed.project_categories || [],
+      project_subcategories: parsed.project_subcategories || [],
+      vendors: parsed.vendors || [],
+      expenses: parsed.expenses || [],
+      vendor_bills: parsed.vendor_bills || [],
+      invoices: parsed.invoices || [],
+      invoice_items: parsed.invoice_items || [],
+      client_payments: parsed.client_payments || [],
+      tasks: parsed.tasks || [],
+      activities: parsed.activities || [],
+      audit_logs: parsed.audit_logs || [],
+      notifications: parsed.notifications || [],
+    };
+    _memStore = loadedStore;
+    return loadedStore;
+  } catch (err) {
+    console.warn("getStore disk read fallback, using memory/seed:", err);
+    try {
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.writeFile(STORE_PATH, JSON.stringify(INITIAL_SEED, null, 2), "utf-8");
+    } catch {
+      // Ignore disk write errors in read-only environments
+    }
+    const seedStore: CrmStore = { ...INITIAL_SEED };
+    _memStore = seedStore;
+    return seedStore;
   }
 }
 
 async function saveStore(store: CrmStore): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf-8");
+  _memStore = store;
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("saveStore disk write skipped:", err);
+  }
 }
 
 // ==============================================================================
@@ -1850,12 +1887,12 @@ export const getTasks = cache(async (projectId?: string): Promise<Task[]> => {
   }
 
   const store = await getStore();
-  let list = store.tasks;
+  let list = store.tasks || [];
   if (projectId) list = list.filter((t) => t.project_id === projectId);
   return list.map((t) => ({
     ...t,
-    project: store.projects.find((p) => p.id === t.project_id) || null,
-    category: store.project_categories.find((c) => c.id === t.category_id) || null,
+    project: (store.projects || []).find((p) => p.id === t.project_id) || null,
+    category: (store.project_categories || []).find((c) => c.id === t.category_id) || null,
   }));
 });
 

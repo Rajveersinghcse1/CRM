@@ -5,12 +5,20 @@ import { CheckSquare } from "lucide-react";
 import Link from "next/link";
 
 export default async function TasksPage() {
-  const [tasks, projects, role] = await Promise.all([
-    getTasks(),
-    getProjects(),
-    getCurrentUserRole(),
+  const [tasksRaw, projectsRaw, role] = await Promise.all([
+    getTasks().catch((err) => {
+      console.warn("TasksPage getTasks error:", err);
+      return [];
+    }),
+    getProjects().catch((err) => {
+      console.warn("TasksPage getProjects error:", err);
+      return [];
+    }),
+    getCurrentUserRole().catch(() => "employee" as const),
   ]);
 
+  const tasks = Array.isArray(tasksRaw) ? tasksRaw : [];
+  const projects = Array.isArray(projectsRaw) ? projectsRaw : [];
   const canAdd = canMutateTasks(role);
 
   const PRIORITY_BADGES: Record<string, { bg: string; text: string }> = {
@@ -69,10 +77,12 @@ export default async function TasksPage() {
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
-              {tasks.map((task) => {
-                const priority = PRIORITY_BADGES[task.priority] || PRIORITY_BADGES.medium;
+              {tasks.map((task, idx) => {
+                const priority = (task.priority && PRIORITY_BADGES[task.priority]) || PRIORITY_BADGES.medium;
+                const statusLabel = task.status ? String(task.status).replace(/_/g, " ") : "pending";
+                const taskId = task.id || `task-${idx}`;
                 return (
-                  <tr key={task.id} className="hover:bg-violet-50/40 transition-colors">
+                  <tr key={taskId} className="hover:bg-violet-50/40 transition-colors">
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-[#1E293B] sm:pl-6">
                       <div className="flex items-center gap-2.5">
                         <span
@@ -80,16 +90,16 @@ export default async function TasksPage() {
                             task.status === "completed" ? "bg-[#34D399]" : "bg-amber-400"
                           }`}
                         />
-                        <span>{task.title}</span>
+                        <span>{task.title || "Untitled Task"}</span>
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-xs font-semibold text-slate-700">
-                      {task.project ? (
+                      {task.project && task.project_id ? (
                         <Link
                           href={`/dashboard/projects/${task.project_id}`}
                           className="hover:underline text-indigo-700 font-bold"
                         >
-                          {task.project.name}
+                          {task.project.name || "Project"}
                         </Link>
                       ) : (
                         "—"
@@ -101,7 +111,14 @@ export default async function TasksPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500">
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString() : "—"}
+                      {task.due_date ? (() => {
+                        try {
+                          const d = new Date(task.due_date);
+                          return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+                        } catch {
+                          return "—";
+                        }
+                      })() : "—"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4">
                       <span
@@ -111,14 +128,14 @@ export default async function TasksPage() {
                             : "bg-amber-100 text-amber-950 border-[#FBBF24]"
                         }`}
                       >
-                        {task.status.replace("_", " ")}
+                        {statusLabel}
                       </span>
                     </td>
                     {canAdd && (
                       <td className="whitespace-nowrap px-3 py-4 text-right pr-6">
                         <div className="flex items-center justify-end gap-1.5">
                           <TaskModal projects={projects} initialData={task} />
-                          <DeleteTaskButton id={task.id} name={task.title} projectId={task.project_id} />
+                          <DeleteTaskButton id={taskId} name={task.title || "Task"} projectId={task.project_id || undefined} />
                         </div>
                       </td>
                     )}

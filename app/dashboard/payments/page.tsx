@@ -6,14 +6,18 @@ import { CreditCard, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 export default async function PaymentsPage() {
-  const [payments, clients, projects, invoices, role] = await Promise.all([
-    getClientPayments(),
-    getClients(),
-    getProjects(),
-    getInvoices(),
-    getCurrentUserRole(),
+  const [paymentsRaw, clientsRaw, projectsRaw, invoicesRaw, role] = await Promise.all([
+    getClientPayments().catch(() => []),
+    getClients().catch(() => []),
+    getProjects().catch(() => []),
+    getInvoices().catch(() => []),
+    getCurrentUserRole().catch(() => "employee" as const),
   ]);
 
+  const payments = Array.isArray(paymentsRaw) ? paymentsRaw : [];
+  const clients = Array.isArray(clientsRaw) ? clientsRaw : [];
+  const projects = Array.isArray(projectsRaw) ? projectsRaw : [];
+  const invoices = Array.isArray(invoicesRaw) ? invoicesRaw : [];
   const canAdd = canMutateInvoices(role);
 
   const totalCollected = payments

@@ -6,18 +6,20 @@ import { FolderKanban, ArrowUpRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProjectsPage() {
-  const [projects, clients, role] = await Promise.all([
-    getProjects(),
-    getClients(),
-    getCurrentUserRole(),
+  const [projectsRaw, clientsRaw, role] = await Promise.all([
+    getProjects().catch(() => []),
+    getClients().catch(() => []),
+    getCurrentUserRole().catch(() => "employee" as const),
   ]);
 
+  const projects = Array.isArray(projectsRaw) ? projectsRaw : [];
+  const clients = Array.isArray(clientsRaw) ? clientsRaw : [];
   const canAdd = canMutateProjects(role);
 
-  const totalContractValue = projects.reduce((sum, p) => sum + p.project_value, 0);
-  const totalCollectedCash = projects.reduce((sum, p) => sum + (p.totalCollected || 0), 0);
-  const totalOutstanding = projects.reduce((sum, p) => sum + (p.totalOutstanding ?? Math.max(0, p.project_value - (p.totalCollected || 0))), 0);
-  const totalActualCost = projects.reduce((sum, p) => sum + (p.totalActualCost || 0), 0);
+  const totalContractValue = projects.reduce((sum, p) => sum + (Number(p.project_value) || 0), 0);
+  const totalCollectedCash = projects.reduce((sum, p) => sum + (Number(p.totalCollected) || 0), 0);
+  const totalOutstanding = projects.reduce((sum, p) => sum + (p.totalOutstanding ?? Math.max(0, (Number(p.project_value) || 0) - (Number(p.totalCollected) || 0))), 0);
+  const totalActualCost = projects.reduce((sum, p) => sum + (Number(p.totalActualCost) || 0), 0);
   const totalGrossProfit = totalCollectedCash - totalActualCost;
   const overallMargin = totalCollectedCash > 0 ? ((totalGrossProfit / totalCollectedCash) * 100).toFixed(1) : "0.0";
 

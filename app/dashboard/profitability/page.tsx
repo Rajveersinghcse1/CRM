@@ -4,11 +4,17 @@ import { TrendingUp, Award, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProfitabilityPage() {
-  const [projects, clients] = await Promise.all([getProjects(), getClients()]);
+  const [projectsRaw, clientsRaw] = await Promise.all([
+    getProjects().catch(() => []),
+    getClients().catch(() => []),
+  ]);
 
-  const totalContractValue = projects.reduce((sum, p) => sum + p.project_value, 0);
-  const totalCollected = projects.reduce((sum, p) => sum + (p.totalCollected || 0), 0);
-  const totalActualCost = projects.reduce((sum, p) => sum + (p.totalActualCost || 0), 0);
+  const projects = Array.isArray(projectsRaw) ? projectsRaw : [];
+  const clients = Array.isArray(clientsRaw) ? clientsRaw : [];
+
+  const totalContractValue = projects.reduce((sum, p) => sum + (Number(p.project_value) || 0), 0);
+  const totalCollected = projects.reduce((sum, p) => sum + (Number(p.totalCollected) || 0), 0);
+  const totalActualCost = projects.reduce((sum, p) => sum + (Number(p.totalActualCost) || 0), 0);
   const totalGrossProfit = totalCollected - totalActualCost;
   const overallMargin = totalCollected > 0 ? ((totalGrossProfit / totalCollected) * 100).toFixed(1) : "0.0";
 

@@ -4,11 +4,13 @@ import { PieChart, AlertTriangle, CheckCircle, ShieldAlert } from "lucide-react"
 import Link from "next/link";
 
 export default async function BudgetsPage() {
-  const projects = await getProjects();
+  const projectsRaw = await getProjects().catch(() => []);
+  const projects = Array.isArray(projectsRaw) ? projectsRaw : [];
 
   const projectBudgets = await Promise.all(
     projects.map(async (p) => {
-      const categories = await getProjectCategories(p.id);
+      const categoriesRaw = await getProjectCategories(p.id).catch(() => []);
+      const categories = Array.isArray(categoriesRaw) ? categoriesRaw : [];
       const collectedCash = p.totalCollected ?? 0;
       const totalActualCost = categories.reduce((sum, c) => sum + (c.actual_cost || 0), 0);
       const grossProfit = collectedCash - totalActualCost;
