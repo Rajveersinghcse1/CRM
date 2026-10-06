@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Activity as ActivityIcon, Pencil, X, Trash2 } from "lucide-react";
 import { createActivityAction, updateActivityAction, deleteActivityAction } from "@/app/actions/crm-actions";
 import type { Client, Project, Activity } from "@/types/crm";
+import { ConfirmModal } from "../components/confirm-modal";
 
 const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
 
@@ -182,23 +183,51 @@ export function ActivityModal({
 
 export function DeleteActivityButton({ id, title }: { id: string; title: string }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete activity "${title}"? This cannot be undone.`)) return;
     setLoading(true);
-    await deleteActivityAction(id);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteActivityAction(id);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete activity.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
-      title="Delete Activity"
-    >
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete Activity"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title="Delete Activity"
+        message={`Are you sure you want to delete activity "${title}"? This cannot be undone.`}
+        confirmLabel="Delete Activity"
+        isDanger
+        loading={loading}
+        errorMessage={error}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          if (!loading) {
+            setIsOpen(false);
+            setError(null);
+          }
+        }}
+      />
+    </>
   );
 }

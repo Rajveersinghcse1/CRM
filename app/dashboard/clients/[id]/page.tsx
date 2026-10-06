@@ -139,7 +139,7 @@ export default async function ClientDetailPage({
           <p className="text-xl font-black text-emerald-800 mt-0.5">{formatINR(totalCollected)}</p>
         </div>
         <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Outstanding Due</p>
+          <p className="text-[11px] font-black uppercase text-slate-500">Pending Amount</p>
           <p className="text-xl font-black text-amber-800 mt-0.5">{formatINR(totalOutstanding)}</p>
         </div>
         <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">

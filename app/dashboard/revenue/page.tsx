@@ -5,9 +5,11 @@ import { Coins, DollarSign } from "lucide-react";
 
 export default async function RevenuePage() {
   const { role } = await requireRole(["admin", "manager", "sales"]);
-  const revenue = await fetchRevenue();
-  const clients = await fetchClients();
-  const services = await fetchServices();
+  const [revenue, clients, services] = await Promise.all([
+    fetchRevenue(),
+    fetchClients(),
+    fetchServices(),
+  ]);
 
   const canAdd = role === "admin" || role === "sales";
 

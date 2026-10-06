@@ -2,34 +2,85 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X } from "lucide-react";
-import { createProjectCategoryAction } from "@/app/actions/crm-actions";
+import { Plus, Pencil, Trash2, X, AlertCircle } from "lucide-react";
+import {
+  createProjectCategoryAction,
+  updateProjectCategoryAction,
+  deleteProjectCategoryAction,
+} from "@/app/actions/crm-actions";
+import { ConfirmModal } from "@/app/dashboard/components/confirm-modal";
+import type { ProjectCategory } from "@/types/crm";
 
-export function CategoryModal({ projectId }: { projectId: string }) {
+export function CategoryModal({
+  projectId,
+  initialData,
+}: {
+  projectId: string;
+  initialData?: ProjectCategory;
+}) {
+  const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const form = new FormData(e.currentTarget);
 
-    await createProjectCategoryAction({
-      project_id: projectId,
-      name: form.get("name") as string,
-      budget: Number(form.get("budget")) || 0,
-    });
+    const name = (form.get("name") as string)?.trim();
+    const budget = Number(form.get("budget")) || 0;
 
-    setLoading(false);
-    setIsOpen(false);
-    router.refresh();
+    if (!name) {
+      setError("Please provide a category name.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (isEdit) {
+        await updateProjectCategoryAction(initialData!.id, { name, budget }, projectId);
+      } else {
+        await createProjectCategoryAction({
+          project_id: projectId,
+          name,
+          budget,
+        });
+      }
+      setLoading(false);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error("Error saving category:", err);
+      setError(err?.message || "Failed to save category. Please try again.");
+      setLoading(false);
+    }
   };
 
   if (!isOpen) {
+    if (isEdit) {
+      return (
+        <button
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
+          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          title="Edit Category"
+        >
+          <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </button>
+      );
+    }
+
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
         className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1E293B] btn-primary px-3.5 py-1.5 text-xs font-black shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
       >
         <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -44,15 +95,24 @@ export function CategoryModal({ projectId }: { projectId: string }) {
         <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-[#8B5CF6] border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">Add Work Category</h3>
+            <h3 className="text-lg font-black text-[#1E293B]">
+              {isEdit ? "Edit Work Category" : "Add Work Category"}
+            </h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B]"
+            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
           >
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
+
+        {error && (
+          <div className="mt-3 flex items-center gap-2 p-2.5 bg-rose-50 border-2 border-rose-400 rounded-xl text-rose-700 text-xs font-bold">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -63,8 +123,9 @@ export function CategoryModal({ projectId }: { projectId: string }) {
               type="text"
               name="name"
               required
+              defaultValue={initialData?.name}
               placeholder="e.g. Meta Ads, Decoration, Modeling, Sound"
-              className="w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B]"
+              className="w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm"
             />
           </div>
 
@@ -76,8 +137,10 @@ export function CategoryModal({ projectId }: { projectId: string }) {
               type="number"
               name="budget"
               required
+              min="0"
+              defaultValue={initialData?.budget}
               placeholder="100000"
-              className="w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B]"
+              className="w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm"
             />
           </div>
 
@@ -92,13 +155,70 @@ export function CategoryModal({ projectId }: { projectId: string }) {
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer disabled:opacity-50"
             >
-              {loading ? "Allocating..." : "Allocate Budget"}
+              {loading ? "Saving..." : isEdit ? "Update Category" : "Allocate Budget"}
             </button>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+export function DeleteCategoryButton({
+  id,
+  name,
+  projectId,
+}: {
+  id: string;
+  name: string;
+  projectId?: string;
+}) {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteProjectCategoryAction(id, projectId);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error("Error deleting category:", err);
+      setError(err?.message || "Failed to delete category.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
+        disabled={loading}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer disabled:opacity-50"
+        title="Delete Category"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onConfirm={handleConfirm}
+        title="Delete Category"
+        message={`Are you sure you want to delete the category "${name}"? Allocated budget partitioning for this category will be deleted.`}
+        confirmText="Yes, Delete Category"
+        loading={loading}
+        error={error}
+      />
+    </>
   );
 }

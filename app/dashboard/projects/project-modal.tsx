@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderPlus, Pencil, X, Trash2 } from "lucide-react";
 import { createProjectAction, updateProjectAction, deleteProjectAction } from "@/app/actions/crm-actions";
+import { ConfirmModal } from "@/app/dashboard/components/confirm-modal";
 import type { Client, Project } from "@/types/crm";
 
 const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
@@ -18,35 +19,51 @@ export function ProjectModal({
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const form = new FormData(e.currentTarget);
+    setError(null);
+    try {
+      const form = new FormData(e.currentTarget);
+      const clientId = form.get("client_id") as string;
+      const name = (form.get("name") as string)?.trim();
 
-    const data = {
-      name: form.get("name") as string,
-      client_id: form.get("client_id") as string,
-      project_value: Number(form.get("project_value")) || 0,
-      overall_budget: Number(form.get("overall_budget")) || 0,
-      start_date: (form.get("start_date") as string) || new Date().toISOString().split("T")[0],
-      end_date: (form.get("end_date") as string) || null,
-      priority: (form.get("priority") as "low" | "medium" | "high" | "urgent") || "medium",
-      status: (form.get("status") as any) || (isEdit ? initialData?.status : "active"),
-      description: form.get("description") as string,
-    };
+      if (!name) {
+        throw new Error("Project name is required.");
+      }
+      if (!clientId) {
+        throw new Error("Please select a client for this project.");
+      }
 
-    if (isEdit) {
-      await updateProjectAction(initialData!.id, data);
+      const data = {
+        name,
+        client_id: clientId,
+        project_value: Number(form.get("project_value")) || 0,
+        overall_budget: Number(form.get("overall_budget")) || 0,
+        start_date: (form.get("start_date") as string) || new Date().toISOString().split("T")[0],
+        end_date: (form.get("end_date") as string) || null,
+        priority: (form.get("priority") as "low" | "medium" | "high" | "urgent") || "medium",
+        status: (form.get("status") as any) || (isEdit ? initialData?.status : "active"),
+        description: (form.get("description") as string) || "",
+      };
+
+      if (isEdit) {
+        await updateProjectAction(initialData!.id, data);
+        setIsOpen(false);
+        router.refresh();
+      } else {
+        const project = await createProjectAction({ ...data, status: "active" });
+        setIsOpen(false);
+        router.push(`/dashboard/projects/${project.id}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to save project.");
+    } finally {
       setLoading(false);
-      setIsOpen(false);
-      router.refresh();
-    } else {
-      const project = await createProjectAction({ ...data, status: "active" });
-      setLoading(false);
-      setIsOpen(false);
-      router.push(`/dashboard/projects/${project.id}`);
     }
   };
 
@@ -54,7 +71,10 @@ export function ProjectModal({
     if (isEdit) {
       return (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
           className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
           title="Edit Project"
         >
@@ -64,7 +84,10 @@ export function ProjectModal({
     }
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
         className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
       >
         <FolderPlus className="h-4 w-4" strokeWidth={2.5} />
@@ -88,6 +111,12 @@ export function ProjectModal({
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
+
+        {error && (
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -233,25 +262,64 @@ export function ProjectModal({
   );
 }
 
-export function DeleteProjectButton({ id, name }: { id: string; name: string }) {
+export function DeleteProjectButton({
+  id,
+  name,
+  redirectUrl,
+}: {
+  id: string;
+  name: string;
+  redirectUrl?: string;
+}) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDelete = async () => {
-    if (!confirm(`Delete project "${name}"? This cannot be undone.`)) return;
+  const handleConfirm = async () => {
     setLoading(true);
-    await deleteProjectAction(id);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteProjectAction(id);
+      setIsOpen(false);
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else if (typeof window !== "undefined" && window.location.pathname.includes(id)) {
+        router.push("/dashboard/projects");
+      } else {
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete project.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
-      title="Delete Project"
-    >
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete Project"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onConfirm={handleConfirm}
+        title="Delete Project"
+        message={`Are you sure you want to permanently delete "${name}"? All related project categories, logs, and workspace items will be removed.`}
+        confirmText="Yes, Delete Project"
+        loading={loading}
+        error={error}
+      />
+    </>
   );
 }

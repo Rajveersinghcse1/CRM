@@ -142,7 +142,21 @@ export function isReadOnly(role: CrmRole | null): boolean {
 export const getUserRole = getCurrentUserRole;
 
 export function getUserDisplayName(user: any): string {
-  if (!user) return "Rajveer Singh";
+  if (!user) return "System";
+
+  if (typeof user === "string") {
+    if (user.includes("@")) {
+      const localPart = user.split("@")[0].replace(/^[0-9]+[._-]?/, "");
+      const words = localPart
+        .replace(/cse$/i, "")
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+      if (words.length > 0) return words.join(" ");
+      return user.split("@")[0];
+    }
+    return user;
+  }
 
   const firstName = user.firstName || "";
   const lastName = user.lastName || "";
@@ -153,13 +167,9 @@ export function getUserDisplayName(user: any): string {
     return user.username;
   }
 
-  const rawEmail = user.emailAddresses?.[0]?.emailAddress || (typeof user === "string" ? user : "");
+  const rawEmail = user.emailAddresses?.[0]?.emailAddress;
   if (rawEmail) {
     const localPart = rawEmail.split("@")[0].replace(/^[0-9]+[._-]?/, "");
-    if (localPart.toLowerCase().includes("rajveer")) {
-      return "Rajveer Singh";
-    }
-
     const words = localPart
       .replace(/cse$/i, "")
       .split(/[._-]/)
@@ -169,8 +179,13 @@ export function getUserDisplayName(user: any): string {
     if (words.length > 0) {
       return words.join(" ");
     }
+    return rawEmail.split("@")[0];
   }
 
-  return "Rajveer Singh";
+  if (user.id) {
+    return `User (${user.id.slice(-6)})`;
+  }
+
+  return "User";
 }
 

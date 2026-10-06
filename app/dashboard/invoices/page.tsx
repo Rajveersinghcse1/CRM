@@ -1,7 +1,7 @@
 import { getInvoices, getClients, getProjects } from "@/lib/crm-db";
 import { getCurrentUserRole, canMutateInvoices } from "@/utils/auth";
 import { formatINR } from "@/utils/finance-calc";
-import { InvoiceModal } from "./invoice-modal";
+import { InvoiceModal, DeleteInvoiceButton } from "./invoice-modal";
 import { FileText, Printer } from "lucide-react";
 import Link from "next/link";
 
@@ -59,7 +59,7 @@ export default async function InvoicesPage() {
           <p className="text-2xl font-black text-emerald-800 mt-0.5">{formatINR(totalPaid)}</p>
         </div>
         <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Outstanding Balance</p>
+          <p className="text-[11px] font-black uppercase text-slate-500">Pending Amount</p>
           <p className="text-2xl font-black text-amber-800 mt-0.5">{formatINR(totalOutstanding)}</p>
         </div>
       </div>
@@ -91,9 +91,14 @@ export default async function InvoicesPage() {
                 <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-4">
                   Status
                 </th>
-                <th className="px-3 py-4 text-center text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                <th className="px-3 py-4 text-center text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Print
                 </th>
+                {canAdd && (
+                  <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
@@ -133,7 +138,7 @@ export default async function InvoicesPage() {
                         {inv.status.replace("_", " ")}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-center pr-6">
+                    <td className="whitespace-nowrap px-3 py-4 text-center">
                       <Link
                         href={`/dashboard/invoices/${inv.id}/print`}
                         className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] px-2.5 py-1 text-xs font-black text-[#1E293B] shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
@@ -143,12 +148,20 @@ export default async function InvoicesPage() {
                         PDF
                       </Link>
                     </td>
+                    {canAdd && (
+                      <td className="whitespace-nowrap px-3 py-4 text-right pr-6">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <InvoiceModal clients={clients} projects={projects} initialData={inv} />
+                          <DeleteInvoiceButton id={inv.id} invoiceNumber={inv.invoice_number} />
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
               {invoices.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-sm font-medium text-slate-400">
+                  <td colSpan={canAdd ? 9 : 8} className="py-12 text-center text-sm font-medium text-slate-400">
                     {canAdd
                       ? 'No client invoices found. Click "Create Invoice" to issue one.'
                       : "No client invoices found."}

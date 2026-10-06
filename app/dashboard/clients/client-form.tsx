@@ -6,6 +6,7 @@ import { insertClient } from "@/app/actions/wexlogic-actions";
 import { updateClientAction, deleteClientAction } from "@/app/actions/crm-actions";
 import { UserPlus, Pencil, X, Trash2 } from "lucide-react";
 import type { Client } from "@/types/crm";
+import { ConfirmModal } from "../components/confirm-modal";
 
 export function ClientForm({ initialData }: { initialData?: Client }) {
   const isEdit = !!initialData;
@@ -18,27 +19,36 @@ export function ClientForm({ initialData }: { initialData?: Client }) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const form = new FormData(e.currentTarget);
+    try {
+      const form = new FormData(e.currentTarget);
+      const name = (form.get("name") as string)?.trim();
+      if (!name) {
+        throw new Error("Client name is required.");
+      }
 
-    if (isEdit) {
-      await updateClientAction(initialData!.id, {
-        name: form.get("name") as string,
-        company_name: form.get("company_name") as string,
-        email: form.get("email") as string,
-        phone: (form.get("phone") as string) || null,
-      });
-      setLoading(false);
-      setIsOpen(false);
-      router.refresh();
-    } else {
-      const res = await insertClient(null, form);
-      setLoading(false);
-      if (res?.error) {
-        setError(res.error);
-      } else if (res?.success) {
+      if (isEdit) {
+        await updateClientAction(initialData!.id, {
+          name,
+          company_name: (form.get("company_name") as string) || "",
+          email: (form.get("email") as string) || "",
+          phone: (form.get("phone") as string) || null,
+        });
         setIsOpen(false);
         router.refresh();
+      } else {
+        const res = await insertClient(null, form);
+        if (res?.error) {
+          setError(res.error);
+        } else if (res?.success) {
+          setIsOpen(false);
+          router.refresh();
+        }
       }
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to save client.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -173,23 +183,51 @@ export function ClientForm({ initialData }: { initialData?: Client }) {
 
 export function DeleteClientButton({ id, name }: { id: string; name: string }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete client "${name}"? This cannot be undone.`)) return;
     setLoading(true);
-    await deleteClientAction(id);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteClientAction(id);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete client.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
-      title="Delete Client"
-    >
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete Client"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title="Delete Client"
+        message={`Are you sure you want to delete client "${name}"? This cannot be undone.`}
+        confirmLabel="Delete Client"
+        isDanger
+        loading={loading}
+        errorMessage={error}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          if (!loading) {
+            setIsOpen(false);
+            setError(null);
+          }
+        }}
+      />
+    </>
   );
 }

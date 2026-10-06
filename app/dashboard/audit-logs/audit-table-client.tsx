@@ -343,6 +343,11 @@ export function AuditTableClient({ logs }: AuditTableClientProps) {
                             <p className="text-[11px] font-medium text-slate-500">
                               {log.user_email || "System"}
                             </p>
+                            {log.user_id && (
+                              <p className="text-[10px] text-slate-400 font-mono" title={log.user_id}>
+                                ID: {log.user_id.length > 18 ? `${log.user_id.slice(0, 14)}...` : log.user_id}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -439,6 +444,11 @@ export function AuditTableClient({ logs }: AuditTableClientProps) {
                     {inspectLog.user_name || "System"}
                   </p>
                   <p className="text-xs text-slate-500">{inspectLog.user_email || "system"}</p>
+                  {inspectLog.user_id && (
+                    <p className="text-[11px] font-mono text-purple-700 font-bold mt-0.5">
+                      User ID: {inspectLog.user_id}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">

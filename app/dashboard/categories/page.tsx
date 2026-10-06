@@ -1,10 +1,17 @@
 import { getProjects, getProjectCategories } from "@/lib/crm-db";
+import { getCurrentUserRole, canMutateProjects } from "@/utils/auth";
 import { formatINR, getBudgetHealthBadge } from "@/utils/finance-calc";
+import { CategoryModal, DeleteCategoryButton } from "@/app/dashboard/projects/[id]/category-modal";
 import { Tags, FolderKanban } from "lucide-react";
 import Link from "next/link";
 
 export default async function CategoriesPage() {
-  const projects = await getProjects();
+  const [projects, role] = await Promise.all([
+    getProjects(),
+    getCurrentUserRole(),
+  ]);
+
+  const canAdd = canMutateProjects(role);
 
   const allProjectCategories = await Promise.all(
     projects.map(async (p) => {
@@ -87,9 +94,14 @@ export default async function CategoriesPage() {
                     <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
                       Utilization
                     </th>
-                    <th className="px-3 py-3 text-right text-[11px] font-black uppercase text-[#1E293B] pr-6">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
                       Health
                     </th>
+                    {canAdd && (
+                      <th className="px-3 py-3 text-right text-[11px] font-black uppercase text-[#1E293B] pr-6">
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
@@ -118,19 +130,27 @@ export default async function CategoriesPage() {
                         <td className="whitespace-nowrap px-3 py-3 text-xs font-black text-[#1E293B]">
                           {util.toFixed(1)}%
                         </td>
-                        <td className="whitespace-nowrap px-3 py-3 text-right pr-6">
+                        <td className="whitespace-nowrap px-3 py-3">
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border uppercase tracking-wider ${badge.bg} ${badge.text} ${badge.border}`}
                           >
                             {badge.label}
                           </span>
                         </td>
+                        {canAdd && (
+                          <td className="whitespace-nowrap px-3 py-3 text-right pr-6">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <CategoryModal projectId={project.id} initialData={cat} />
+                              <DeleteCategoryButton id={cat.id} name={cat.name} projectId={project.id} />
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
                   {categories.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-6 text-center text-xs text-slate-400 font-medium">
+                      <td colSpan={canAdd ? 7 : 6} className="py-6 text-center text-xs text-slate-400 font-medium">
                         No categories configured for this project.
                       </td>
                     </tr>

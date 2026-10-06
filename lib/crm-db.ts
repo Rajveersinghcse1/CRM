@@ -6,6 +6,7 @@
 import { cache } from "react";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getCurrentUser } from "@/utils/auth";
+import { auth } from "@clerk/nextjs/server";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -228,11 +229,21 @@ export async function updateCompany(id: string, data: Partial<Company>): Promise
 }
 
 export async function deleteCompany(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("companies").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteCompany failed:", err); }
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("companies").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) { console.warn("Supabase deleteCompany failed:", err); }
   const store = await getStore();
   const idx = store.companies.findIndex((c) => c.id === id);
-  if (idx !== -1) { const removed = store.companies.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "company", id, removed, null); }
-  return true;
+  if (idx !== -1) {
+    const removed = store.companies.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "company", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
 }
 
 // --- CLIENTS ---
@@ -352,11 +363,21 @@ export async function updateClient(id: string, data: Partial<Client>): Promise<C
 }
 
 export async function deleteClient(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("clients").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteClient failed:", err); }
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("clients").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) { console.warn("Supabase deleteClient failed:", err); }
   const store = await getStore();
   const idx = store.clients.findIndex((c) => c.id === id);
-  if (idx !== -1) { const removed = store.clients.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "client", id, removed, null); }
-  return true;
+  if (idx !== -1) {
+    const removed = store.clients.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "client", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
 }
 
 // --- LEADS & CONVERSION ---
@@ -492,9 +513,11 @@ export async function updateLead(id: string, data: Partial<Lead>): Promise<Lead 
 }
 
 export async function deleteLead(id: string): Promise<boolean> {
+  let deleted = false;
   try {
     const supabase = getSupabase();
-    await supabase.from("leads").delete().eq("id", id);
+    const { error } = await supabase.from("leads").delete().eq("id", id);
+    if (!error) deleted = true;
   } catch (err) {
     console.warn("Supabase deleteLead failed:", err);
   }
@@ -505,8 +528,9 @@ export async function deleteLead(id: string): Promise<boolean> {
     const removed = store.leads.splice(index, 1)[0];
     await saveStore(store);
     await logAuditAction("delete", "lead", id, removed, null);
+    deleted = true;
   }
-  return true;
+  return deleted;
 }
 
 export async function convertLeadToClient(
@@ -663,11 +687,21 @@ export async function updateDeal(id: string, data: Partial<Deal>): Promise<Deal 
 }
 
 export async function deleteDeal(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("deals").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteDeal failed:", err); }
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("deals").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) { console.warn("Supabase deleteDeal failed:", err); }
   const store = await getStore();
   const idx = store.deals.findIndex((d) => d.id === id);
-  if (idx !== -1) { const removed = store.deals.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "deal", id, removed, null); }
-  return true;
+  if (idx !== -1) {
+    const removed = store.deals.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "deal", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
 }
 
 // --- SERVICES ---
@@ -721,9 +755,10 @@ export const getProjects = cache(async (): Promise<Project[]> => {
     const totalCollected = projectPayments.reduce((sum, p) => sum + Number(p.amount), 0);
     const totalOutstanding = Math.max(0, proj.project_value - totalCollected);
 
-    const grossProfit = calcGrossProfit(proj.project_value, totalActualCost);
-    const grossMargin = calcGrossMarginPct(proj.project_value, totalActualCost);
+    const grossProfit = calcGrossProfit(totalCollected, totalActualCost);
+    const grossMargin = calcGrossMarginPct(totalCollected, totalActualCost);
     const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
+    const budgetLeft = totalCollected - totalActualCost;
 
     return {
       ...proj,
@@ -733,6 +768,7 @@ export const getProjects = cache(async (): Promise<Project[]> => {
       grossProfit,
       grossMargin,
       remainingBudget,
+      budgetLeft,
     };
   });
 });
@@ -758,9 +794,10 @@ export const getProjectById = cache(async (id: string): Promise<Project | null> 
         .filter((p) => p.status === "completed")
         .reduce((sum, p) => sum + Number(p.amount), 0);
       const totalOutstanding = Math.max(0, proj.project_value - totalCollected);
-      const grossProfit = calcGrossProfit(proj.project_value, totalActualCost);
-      const grossMargin = calcGrossMarginPct(proj.project_value, totalActualCost);
+      const grossProfit = calcGrossProfit(totalCollected, totalActualCost);
+      const grossMargin = calcGrossMarginPct(totalCollected, totalActualCost);
       const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
+      const budgetLeft = totalCollected - totalActualCost;
 
       return {
         ...proj,
@@ -771,6 +808,7 @@ export const getProjectById = cache(async (id: string): Promise<Project | null> 
         grossProfit,
         grossMargin,
         remainingBudget,
+        budgetLeft,
       };
     }
   } catch (err) {
@@ -855,11 +893,21 @@ export async function updateProject(id: string, data: Partial<Project>): Promise
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("projects").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteProject failed:", err); }
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) { console.warn("Supabase deleteProject failed:", err); }
   const store = await getStore();
   const idx = store.projects.findIndex((p) => p.id === id);
-  if (idx !== -1) { const removed = store.projects.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "project", id, removed, null); }
-  return true;
+  if (idx !== -1) {
+    const removed = store.projects.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "project", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
 }
 
 export async function saveProjectQuotation(
@@ -993,6 +1041,53 @@ export async function createProjectCategory(data: {
   return newCat;
 }
 
+export async function updateProjectCategory(
+  id: string,
+  data: Partial<ProjectCategory>
+): Promise<ProjectCategory | null> {
+  const now = new Date().toISOString();
+  try {
+    const supabase = getSupabase();
+    const { data: updated } = await supabase
+      .from("project_categories")
+      .update({ ...data, updated_at: now })
+      .eq("id", id)
+      .select()
+      .single();
+    if (updated) return updated as ProjectCategory;
+  } catch (err) {
+    console.warn("Supabase updateProjectCategory failed:", err);
+  }
+  const store = await getStore();
+  const item = store.project_categories.find((c) => c.id === id);
+  if (!item) return null;
+  const prev = { ...item };
+  Object.assign(item, data, { updated_at: now });
+  await saveStore(store);
+  await logAuditAction("update", "project_category", id, prev, item);
+  return item;
+}
+
+export async function deleteProjectCategory(id: string): Promise<boolean> {
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("project_categories").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) {
+    console.warn("Supabase deleteProjectCategory failed:", err);
+  }
+  const store = await getStore();
+  const idx = store.project_categories.findIndex((c) => c.id === id);
+  if (idx !== -1) {
+    const removed = store.project_categories.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "project_category", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
+}
+
 // --- EXPENSES ---
 export const getExpenses = cache(async (projectId?: string): Promise<Expense[]> => {
   try {
@@ -1093,11 +1188,21 @@ export async function updateExpense(id: string, data: Partial<Expense>): Promise
 }
 
 export async function deleteExpense(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("expenses").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteExpense failed:", err); }
+  let deleted = false;
+  try {
+    const supabase = getSupabase();
+    const { error } = await supabase.from("expenses").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) { console.warn("Supabase deleteExpense failed:", err); }
   const store = await getStore();
   const idx = store.expenses.findIndex((e) => e.id === id);
-  if (idx !== -1) { const removed = store.expenses.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "expense", id, removed, null); }
-  return true;
+  if (idx !== -1) {
+    const removed = store.expenses.splice(idx, 1)[0];
+    await saveStore(store);
+    await logAuditAction("delete", "expense", id, removed, null);
+    deleted = true;
+  }
+  return deleted;
 }
 
 
@@ -1186,11 +1291,12 @@ export async function updateVendor(id: string, data: Partial<Vendor>): Promise<V
 }
 
 export async function deleteVendor(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("vendors").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteVendor failed:", err); }
+  let deleted = false;
+  try { const supabase = getSupabase(); const { error } = await supabase.from("vendors").delete().eq("id", id); if (!error) deleted = true; } catch (err) { console.warn("Supabase deleteVendor failed:", err); }
   const store = await getStore();
   const idx = store.vendors.findIndex((v) => v.id === id);
-  if (idx !== -1) { const removed = store.vendors.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "vendor", id, removed, null); }
-  return true;
+  if (idx !== -1) { const removed = store.vendors.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "vendor", id, removed, null); deleted = true; }
+  return deleted;
 }
 
 export const getVendorBills = cache(async (vendorId?: string, projectId?: string): Promise<VendorBill[]> => {
@@ -1277,7 +1383,12 @@ export async function updateVendorBill(id: string, data: Partial<VendorBill>): P
   const now = new Date().toISOString();
   const amount = data.amount !== undefined ? Number(data.amount) : undefined;
   const tax = data.tax !== undefined ? Number(data.tax) : undefined;
-  const updateData = { ...data, ...(amount !== undefined && tax !== undefined ? { total_amount: amount + tax } : {}), updated_at: now };
+  const computedTotal = amount !== undefined ? amount + (tax !== undefined ? tax : 0) : undefined;
+  const updateData = {
+    ...data,
+    ...(computedTotal !== undefined && data.total_amount === undefined ? { total_amount: computedTotal } : {}),
+    updated_at: now,
+  };
   try {
     const supabase = getSupabase();
     const { data: updated } = await supabase.from("vendor_bills").update(updateData).eq("id", id).select().single();
@@ -1294,11 +1405,12 @@ export async function updateVendorBill(id: string, data: Partial<VendorBill>): P
 }
 
 export async function deleteVendorBill(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("vendor_bills").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteVendorBill failed:", err); }
+  let deleted = false;
+  try { const supabase = getSupabase(); const { error } = await supabase.from("vendor_bills").delete().eq("id", id); if (!error) deleted = true; } catch (err) { console.warn("Supabase deleteVendorBill failed:", err); }
   const store = await getStore();
   const idx = store.vendor_bills.findIndex((b) => b.id === id);
-  if (idx !== -1) { const removed = store.vendor_bills.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "vendor_bill", id, removed, null); }
-  return true;
+  if (idx !== -1) { const removed = store.vendor_bills.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "vendor_bill", id, removed, null); deleted = true; }
+  return deleted;
 }
 
 
@@ -1454,9 +1566,11 @@ export async function updateInvoice(
 }
 
 export async function deleteInvoice(id: string): Promise<boolean> {
+  let deleted = false;
   try {
     const supabase = getSupabase();
-    await supabase.from("invoices").delete().eq("id", id);
+    const { error } = await supabase.from("invoices").delete().eq("id", id);
+    if (!error) deleted = true;
   } catch (err) {
     console.warn("Supabase deleteInvoice failed:", err);
   }
@@ -1466,8 +1580,9 @@ export async function deleteInvoice(id: string): Promise<boolean> {
     const removed = store.invoices.splice(idx, 1)[0];
     await saveStore(store);
     await logAuditAction("delete", "invoice", id, removed, null);
+    deleted = true;
   }
-  return true;
+  return deleted;
 }
 
 export const getClientPayments = cache(async (
@@ -1539,23 +1654,6 @@ export async function createClientPayment(data: Partial<ClientPayment>): Promise
   try {
     const supabase = getSupabase();
     await supabase.from("client_payments").insert(newPayment);
-
-    // If tied to an invoice, increment invoice.amount_paid
-    if (newPayment.invoice_id) {
-      const { data: inv } = await supabase
-        .from("invoices")
-        .select("total, amount_paid")
-        .eq("id", newPayment.invoice_id)
-        .single();
-      if (inv) {
-        const newPaid = (Number(inv.amount_paid) || 0) + amount;
-        const newStatus = newPaid >= inv.total ? "paid" : "partially_paid";
-        await supabase
-          .from("invoices")
-          .update({ amount_paid: newPaid, status: newStatus, updated_at: now })
-          .eq("id", newPayment.invoice_id);
-      }
-    }
   } catch (err) {
     console.warn("Supabase createClientPayment failed, using store:", err);
   }
@@ -1563,8 +1661,176 @@ export async function createClientPayment(data: Partial<ClientPayment>): Promise
   const store = await getStore();
   store.client_payments.unshift(newPayment);
   await saveStore(store);
+
+  // If tied to an invoice, sync invoice amount_paid and status
+  if (newPayment.invoice_id) {
+    await syncInvoiceAmountAndStatus(newPayment.invoice_id);
+  }
+
   await logAuditAction("create", "client_payment", newPayment.id, null, newPayment);
   return newPayment;
+}
+
+export async function syncInvoiceAmountAndStatus(invoiceId: string) {
+  if (!invoiceId) return;
+  const now = new Date().toISOString();
+  let paymentsForInvoice: Array<{ amount: number; status: string }> = [];
+
+  try {
+    const supabase = getSupabase();
+    const { data: dbPayments } = await supabase
+      .from("client_payments")
+      .select("amount, status")
+      .eq("invoice_id", invoiceId);
+    if (dbPayments && dbPayments.length > 0) {
+      paymentsForInvoice = dbPayments;
+    }
+  } catch (err) {
+    console.warn("Supabase syncInvoiceAmountAndStatus fetch payments failed:", err);
+  }
+
+  const store = await getStore();
+  if (paymentsForInvoice.length === 0) {
+    paymentsForInvoice = store.client_payments.filter((p) => p.invoice_id === invoiceId);
+  }
+
+  const completedPaid = paymentsForInvoice
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  try {
+    const supabase = getSupabase();
+    const { data: inv } = await supabase
+      .from("invoices")
+      .select("total, status")
+      .eq("id", invoiceId)
+      .single();
+    if (inv) {
+      const newStatus =
+        completedPaid >= inv.total
+          ? "paid"
+          : completedPaid > 0
+          ? "partially_paid"
+          : inv.status === "paid" || inv.status === "partially_paid"
+          ? "issued"
+          : inv.status;
+
+      await supabase
+        .from("invoices")
+        .update({ amount_paid: completedPaid, status: newStatus, updated_at: now })
+        .eq("id", invoiceId);
+    }
+  } catch (err) {
+    console.warn("Supabase syncInvoiceAmountAndStatus update failed:", err);
+  }
+
+  const storeInv = store.invoices.find((i) => i.id === invoiceId);
+  if (storeInv) {
+    storeInv.amount_paid = completedPaid;
+    if (completedPaid >= storeInv.total) {
+      storeInv.status = "paid";
+    } else if (completedPaid > 0) {
+      storeInv.status = "partially_paid";
+    } else if (storeInv.status === "paid" || storeInv.status === "partially_paid") {
+      storeInv.status = "issued";
+    }
+    storeInv.updated_at = now;
+    await saveStore(store);
+  }
+}
+
+export async function updateClientPayment(
+  id: string,
+  data: Partial<ClientPayment>
+): Promise<ClientPayment | null> {
+  const now = new Date().toISOString();
+  let prevInvoiceId: string | null = null;
+  const store = await getStore();
+  const existingStoreItem = store.client_payments.find((p) => p.id === id);
+  if (existingStoreItem?.invoice_id) {
+    prevInvoiceId = existingStoreItem.invoice_id;
+  }
+
+  let updatedItem: ClientPayment | null = null;
+
+  try {
+    const supabase = getSupabase();
+    if (!prevInvoiceId) {
+      const { data: dbItem } = await supabase
+        .from("client_payments")
+        .select("invoice_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (dbItem?.invoice_id) prevInvoiceId = dbItem.invoice_id;
+    }
+
+    const { data: updated, error } = await supabase
+      .from("client_payments")
+      .update({ ...data, updated_at: now })
+      .eq("id", id)
+      .select()
+      .single();
+    if (!error && updated) {
+      updatedItem = updated as ClientPayment;
+    }
+  } catch (err) {
+    console.warn("Supabase updateClientPayment failed:", err);
+  }
+
+  if (existingStoreItem) {
+    const prev = { ...existingStoreItem };
+    Object.assign(existingStoreItem, data, { updated_at: now });
+    await saveStore(store);
+    await logAuditAction("update", "client_payment", id, prev, existingStoreItem);
+    if (!updatedItem) updatedItem = existingStoreItem;
+  }
+
+  // Keep invoice amount_paid and status in sync
+  const targetInvoiceId = updatedItem?.invoice_id || data.invoice_id || prevInvoiceId;
+  if (targetInvoiceId) {
+    await syncInvoiceAmountAndStatus(targetInvoiceId);
+  }
+  if (prevInvoiceId && prevInvoiceId !== targetInvoiceId) {
+    await syncInvoiceAmountAndStatus(prevInvoiceId);
+  }
+
+  return updatedItem;
+}
+
+export async function deleteClientPayment(id: string): Promise<boolean> {
+  let deleted = false;
+  let targetInvoiceId: string | null = null;
+
+  try {
+    const supabase = getSupabase();
+    const { data: dbItem } = await supabase
+      .from("client_payments")
+      .select("invoice_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (dbItem?.invoice_id) targetInvoiceId = dbItem.invoice_id;
+
+    const { error } = await supabase.from("client_payments").delete().eq("id", id);
+    if (!error) deleted = true;
+  } catch (err) {
+    console.warn("Supabase deleteClientPayment failed:", err);
+  }
+
+  const store = await getStore();
+  const idx = store.client_payments.findIndex((p) => p.id === id);
+  if (idx !== -1) {
+    const removed = store.client_payments.splice(idx, 1)[0];
+    if (!targetInvoiceId && removed.invoice_id) targetInvoiceId = removed.invoice_id;
+    await saveStore(store);
+    await logAuditAction("delete", "client_payment", id, removed, null);
+    deleted = true;
+  }
+
+  if (targetInvoiceId) {
+    await syncInvoiceAmountAndStatus(targetInvoiceId);
+  }
+
+  return deleted;
 }
 
 // --- TASKS ---
@@ -1650,11 +1916,12 @@ export async function updateTask(id: string, data: Partial<Task>): Promise<Task 
 }
 
 export async function deleteTask(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("tasks").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteTask failed:", err); }
+  let deleted = false;
+  try { const supabase = getSupabase(); const { error } = await supabase.from("tasks").delete().eq("id", id); if (!error) deleted = true; } catch (err) { console.warn("Supabase deleteTask failed:", err); }
   const store = await getStore();
   const idx = store.tasks.findIndex((t) => t.id === id);
-  if (idx !== -1) { const removed = store.tasks.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "task", id, removed, null); }
-  return true;
+  if (idx !== -1) { const removed = store.tasks.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "task", id, removed, null); deleted = true; }
+  return deleted;
 }
 
 export async function updateTaskStatus(id: string, status: Task["status"]): Promise<Task | null> {
@@ -1765,11 +2032,12 @@ export async function updateActivity(id: string, data: Partial<Activity>): Promi
 }
 
 export async function deleteActivity(id: string): Promise<boolean> {
-  try { const supabase = getSupabase(); await supabase.from("activities").delete().eq("id", id); } catch (err) { console.warn("Supabase deleteActivity failed:", err); }
+  let deleted = false;
+  try { const supabase = getSupabase(); const { error } = await supabase.from("activities").delete().eq("id", id); if (!error) deleted = true; } catch (err) { console.warn("Supabase deleteActivity failed:", err); }
   const store = await getStore();
   const idx = store.activities.findIndex((a) => a.id === id);
-  if (idx !== -1) { const removed = store.activities.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "activity", id, removed, null); }
-  return true;
+  if (idx !== -1) { const removed = store.activities.splice(idx, 1)[0]; await saveStore(store); await logAuditAction("delete", "activity", id, removed, null); deleted = true; }
+  return deleted;
 }
 
 
@@ -1816,6 +2084,14 @@ export async function logAuditAction(
 ): Promise<void> {
   try {
     let user: any = null;
+    let authUserId: string | null = null;
+    try {
+      const session = await auth();
+      authUserId = session?.userId || null;
+    } catch {
+      // auth() may fail outside request context
+    }
+
     try {
       user = await getCurrentUser();
     } catch {
@@ -1825,12 +2101,18 @@ export async function logAuditAction(
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    const resolvedUserId = actor?.id || user?.id || null;
-    const resolvedEmail = actor?.email || user?.emailAddresses?.[0]?.emailAddress || "system";
+    const resolvedUserId = actor?.id || user?.id || authUserId || null;
+    const resolvedEmail =
+      actor?.email ||
+      user?.emailAddresses?.[0]?.emailAddress ||
+      (resolvedUserId ? `user_${resolvedUserId.slice(-8)}` : "system");
+
     const resolvedName =
       actor?.name ||
       (user
         ? getUserDisplayName(user)
+        : resolvedUserId
+        ? `User (${resolvedUserId.slice(-6)})`
         : resolvedEmail !== "system"
         ? getUserDisplayName(resolvedEmail)
         : "System");
@@ -1954,8 +2236,8 @@ export const getProjectProfitability = cache(async (
   const overallBudget = project.overall_budget;
   const remainingBudget = Math.max(0, overallBudget - totalActualCost);
   const budgetUtilizationPct = calcUtilizationPct(totalActualCost, overallBudget);
-  const grossProfit = calcGrossProfit(contractValue, totalActualCost);
-  const grossMarginPct = calcGrossMarginPct(contractValue, totalActualCost);
+  const grossProfit = calcGrossProfit(collectedAmount, totalActualCost);
+  const grossMarginPct = calcGrossMarginPct(collectedAmount, totalActualCost);
 
   const categoryBreakdown = categories.map((cat) => ({
     categoryId: cat.id,
@@ -2028,8 +2310,8 @@ export const getExecutiveDashboardData = cache(async (): Promise<ExecutiveDashbo
   const clientReceivables = Math.max(0, totalPipeline - collectedRevenue);
 
   const projectCosts = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-  const grossProfit = calcGrossProfit(totalPipeline, projectCosts);
-  const grossMarginPct = calcGrossMarginPct(totalPipeline, projectCosts);
+  const grossProfit = calcGrossProfit(collectedRevenue, projectCosts);
+  const grossMarginPct = calcGrossMarginPct(collectedRevenue, projectCosts);
 
   // Budget Alerts (utilization >= 80%) — fetch all project categories concurrently in parallel
   const budgetAlerts: ExecutiveDashboardData["budgetAlerts"] = [];

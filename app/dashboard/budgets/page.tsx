@@ -9,11 +9,11 @@ export default async function BudgetsPage() {
   const projectBudgets = await Promise.all(
     projects.map(async (p) => {
       const categories = await getProjectCategories(p.id);
-      const totalBudget = p.overall_budget;
+      const collectedCash = p.totalCollected ?? 0;
       const totalActualCost = categories.reduce((sum, c) => sum + (c.actual_cost || 0), 0);
-      const remaining = totalBudget - totalActualCost;
-      const utilPct = totalBudget > 0 ? (totalActualCost / totalBudget) * 100 : 0;
-      return { project: p, categories, totalBudget, totalActualCost, remaining, utilPct };
+      const grossProfit = collectedCash - totalActualCost;
+      const utilPct = collectedCash > 0 ? (totalActualCost / collectedCash) * 100 : 0;
+      return { project: p, categories, collectedCash, totalActualCost, grossProfit, utilPct };
     })
   );
 
@@ -113,7 +113,7 @@ export default async function BudgetsPage() {
 
       {/* Project Budgets Overview */}
       <div className="space-y-4">
-        {projectBudgets.map(({ project, categories, totalBudget, totalActualCost, remaining, utilPct }) => (
+        {projectBudgets.map(({ project, categories, collectedCash, totalActualCost, grossProfit, utilPct }) => (
           <div key={project.id} className="rounded-2xl border-2 border-[#1E293B] bg-white p-5 shadow-pop space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b-2 border-[#1E293B]/10 pb-3">
               <div>
@@ -129,17 +129,17 @@ export default async function BudgetsPage() {
               </div>
               <div className="flex items-center gap-4 text-xs">
                 <div>
-                  <span className="text-slate-500 font-medium">Budget: </span>
-                  <span className="font-black text-[#1E293B]">{formatINR(totalBudget)}</span>
+                  <span className="text-slate-500 font-medium">Collected Cash: </span>
+                  <span className="font-black text-emerald-800">{formatINR(collectedCash)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-medium">Spent: </span>
+                  <span className="text-slate-500 font-medium">Actual Cost: </span>
                   <span className="font-black text-rose-700">{formatINR(totalActualCost)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-medium">Remaining: </span>
-                  <span className={`font-black ${remaining < 0 ? 'text-rose-700' : 'text-emerald-800'}`}>
-                    {formatINR(remaining)}
+                  <span className="text-slate-500 font-medium">Gross Profit: </span>
+                  <span className={`font-black ${grossProfit < 0 ? 'text-rose-700' : 'text-emerald-800'}`}>
+                    {formatINR(grossProfit)}
                   </span>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default async function BudgetsPage() {
             {/* Stacked / Progress Bar */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs font-bold text-slate-600">
-                <span>Overall Project Budget Utilization</span>
+                <span>Actual Cost vs Collected Cash</span>
                 <span>{utilPct.toFixed(1)}%</span>
               </div>
               <div className="h-3 w-full rounded-full border-2 border-[#1E293B] bg-slate-100 overflow-hidden">

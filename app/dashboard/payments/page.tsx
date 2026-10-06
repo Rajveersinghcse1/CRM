@@ -1,7 +1,7 @@
 import { getClientPayments, getClients, getProjects, getInvoices } from "@/lib/crm-db";
 import { getCurrentUserRole, canMutateInvoices } from "@/utils/auth";
 import { formatINR } from "@/utils/finance-calc";
-import { PaymentModal } from "./payment-modal";
+import { PaymentModal, DeletePaymentButton } from "./payment-modal";
 import { CreditCard, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -79,9 +79,14 @@ export default async function PaymentsPage() {
                 <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Date
                 </th>
-                <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Status
                 </th>
+                {canAdd && (
+                  <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
@@ -113,16 +118,35 @@ export default async function PaymentsPage() {
                   <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500">
                     {new Date(p.payment_date).toLocaleDateString()}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-right pr-6">
-                    <span className="rounded-full bg-emerald-100 border border-[#34D399] px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-950">
+                  <td className="whitespace-nowrap px-3 py-4">
+                    <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase ${
+                      p.status === "completed"
+                        ? "bg-emerald-100 border-[#34D399] text-emerald-950"
+                        : p.status === "pending"
+                        ? "bg-amber-100 border-[#FBBF24] text-amber-950"
+                        : "bg-slate-100 border-slate-300 text-slate-700"
+                    }`}>
                       {p.status}
                     </span>
                   </td>
+                  {canAdd && (
+                    <td className="whitespace-nowrap px-3 py-4 text-right pr-6">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <PaymentModal
+                          clients={clients}
+                          projects={projects}
+                          invoices={invoices}
+                          initialData={p}
+                        />
+                        <DeletePaymentButton id={p.id} paymentNumber={p.payment_number || undefined} projectId={p.project_id || undefined} />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
               {payments.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-sm font-medium text-slate-400">
+                  <td colSpan={canAdd ? 8 : 7} className="py-12 text-center text-sm font-medium text-slate-400">
                     {canAdd
                       ? 'No client payments recorded. Click "Log Client Payment" to add one.'
                       : "No client payments recorded."}

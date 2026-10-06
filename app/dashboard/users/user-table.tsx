@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, ShieldCheck, UserCheck } from "lucide-react";
+import { ConfirmModal } from "../components/confirm-modal";
 
 export type UserItem = {
   id: string;
@@ -48,17 +49,16 @@ export function UserTable({
   const isAdmin = currentUserRole === "admin";
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; email: string } | null>(null);
   const router = useRouter();
 
-  const handleDelete = (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to revoke CRM access for ${email}?`)) {
-      return;
-    }
+  const handleRevokeConfirm = () => {
+    if (!revokeTarget) return;
 
     setActionError(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/admin/users?id=${userId}`, {
+        const res = await fetch(`/api/admin/users?id=${revokeTarget.id}`, {
           method: "DELETE",
         });
         const data = await res.json();
@@ -66,6 +66,7 @@ export function UserTable({
           setActionError(data.error || "Failed to delete user");
           return;
         }
+        setRevokeTarget(null);
         router.refresh();
       } catch (err: unknown) {
         setActionError(
@@ -223,7 +224,7 @@ export function UserTable({
                     <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                       {isAdmin && !isSelf ? (
                         <button
-                          onClick={() => handleDelete(user.id, user.email)}
+                          onClick={() => setRevokeTarget({ id: user.id, email: user.email })}
                           disabled={isPending}
                           className="p-1.5 rounded-lg border-2 border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:border-rose-500 shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
                           title="Revoke CRM Access"
@@ -251,6 +252,23 @@ export function UserTable({
           </table>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!revokeTarget}
+        title="Revoke CRM Access"
+        message={revokeTarget ? `Are you sure you want to revoke CRM access for ${revokeTarget.email}? This user will no longer be able to log in.` : ""}
+        confirmLabel="Revoke Access"
+        isDanger
+        loading={isPending}
+        errorMessage={actionError}
+        onConfirm={handleRevokeConfirm}
+        onCancel={() => {
+          if (!isPending) {
+            setRevokeTarget(null);
+            setActionError(null);
+          }
+        }}
+      />
     </div>
   );
 }

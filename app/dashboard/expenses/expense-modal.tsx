@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Receipt, Pencil, X, Trash2 } from "lucide-react";
 import { createExpenseAction, updateExpenseAction, deleteExpenseAction } from "@/app/actions/crm-actions";
 import type { Project, Vendor, Expense } from "@/types/crm";
+import { ConfirmModal } from "../components/confirm-modal";
 
 const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
 
@@ -20,41 +21,66 @@ export function ExpenseModal({
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const form = new FormData(e.currentTarget);
+    setError(null);
+    try {
+      const form = new FormData(e.currentTarget);
+      const projectId = form.get("project_id") as string;
+      const description = (form.get("description") as string)?.trim();
 
-    const data = {
-      project_id: form.get("project_id") as string,
-      vendor_id: (form.get("vendor_id") as string) || null,
-      description: form.get("description") as string,
-      amount: Number(form.get("amount")) || 0,
-      expense_date: (form.get("expense_date") as string) || new Date().toISOString().split("T")[0],
-      payment_method: (form.get("payment_method") as any) || "bank_transfer",
-      payment_status: (form.get("payment_status") as any) || (isEdit ? initialData?.payment_status : "paid"),
-      bill_number: form.get("bill_number") as string,
-      notes: form.get("notes") as string,
-    };
+      if (!projectId) {
+        throw new Error("Please select a project.");
+      }
+      if (!description) {
+        throw new Error("Expense description is required.");
+      }
 
-    if (isEdit) {
-      await updateExpenseAction(initialData!.id, data);
-    } else {
-      await createExpenseAction(data);
+      const amount = Number(form.get("amount")) || 0;
+      if (amount <= 0) {
+        throw new Error("Please enter a valid expense amount greater than 0.");
+      }
+
+      const data = {
+        project_id: projectId,
+        vendor_id: (form.get("vendor_id") as string) || null,
+        description,
+        amount,
+        expense_date: (form.get("expense_date") as string) || new Date().toISOString().split("T")[0],
+        payment_method: (form.get("payment_method") as any) || "bank_transfer",
+        payment_status: (form.get("payment_status") as any) || (isEdit ? initialData?.payment_status : "paid"),
+        bill_number: (form.get("bill_number") as string) || "",
+        notes: (form.get("notes") as string) || "",
+      };
+
+      if (isEdit) {
+        await updateExpenseAction(initialData!.id, data);
+      } else {
+        await createExpenseAction(data);
+      }
+
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to save expense.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    setIsOpen(false);
-    router.refresh();
   };
 
   if (!isOpen) {
     if (isEdit) {
       return (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
           className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
           title="Edit Expense"
         >
@@ -64,7 +90,10 @@ export function ExpenseModal({
     }
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
         className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
       >
         <Receipt className="h-4 w-4" strokeWidth={2.5} />
@@ -88,6 +117,12 @@ export function ExpenseModal({
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
+
+        {error && (
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -223,23 +258,51 @@ export function ExpenseModal({
 
 export function DeleteExpenseButton({ id, description, projectId }: { id: string; description: string; projectId?: string }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete expense "${description}"? This cannot be undone.`)) return;
     setLoading(true);
-    await deleteExpenseAction(id, projectId);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteExpenseAction(id, projectId);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete expense.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
-      title="Delete Expense"
-    >
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete Expense"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title="Delete Expense"
+        message={`Are you sure you want to delete expense "${description}"? This cannot be undone.`}
+        confirmLabel="Delete Expense"
+        isDanger
+        loading={loading}
+        errorMessage={error}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          if (!loading) {
+            setIsOpen(false);
+            setError(null);
+          }
+        }}
+      />
+    </>
   );
 }

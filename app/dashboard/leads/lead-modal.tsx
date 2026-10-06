@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserPlus, Pencil, X, Trash2 } from "lucide-react";
 import { createLeadAction, updateLeadAction, deleteLeadAction } from "@/app/actions/crm-actions";
 import type { Lead } from "@/types/crm";
+import { ConfirmModal } from "../components/confirm-modal";
 
 const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
 const SOURCES = ["Website", "Instagram", "LinkedIn", "Facebook", "Referral", "Cold Outreach"];
@@ -14,44 +15,72 @@ export function LeadModal({ initialData }: { initialData?: Lead }) {
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const data = {
-      full_name: form.get("full_name") as string,
-      company_name: form.get("company_name") as string,
-      email: form.get("email") as string,
-      phone: form.get("phone") as string,
-      designation: form.get("designation") as string,
-      source: form.get("source") as string,
-      status: (form.get("status") as string) || "new",
-      lead_value: Number(form.get("lead_value")) || 0,
-      expected_close_date: (form.get("expected_close_date") as string) || null,
-      notes: form.get("notes") as string,
-    };
-    if (isEdit) {
-      await updateLeadAction(initialData!.id, data);
-    } else {
-      await createLeadAction({ ...data, status: "new" });
+    setError(null);
+    try {
+      const form = new FormData(e.currentTarget);
+      const fullName = (form.get("full_name") as string)?.trim();
+      if (!fullName) {
+        throw new Error("Full name is required.");
+      }
+
+      const data = {
+        full_name: fullName,
+        company_name: (form.get("company_name") as string) || "",
+        email: (form.get("email") as string) || "",
+        phone: (form.get("phone") as string) || "",
+        designation: (form.get("designation") as string) || "",
+        source: (form.get("source") as string) || "Website",
+        status: (form.get("status") as string) || "new",
+        lead_value: Number(form.get("lead_value")) || 0,
+        expected_close_date: (form.get("expected_close_date") as string) || null,
+        notes: (form.get("notes") as string) || "",
+      };
+
+      if (isEdit) {
+        await updateLeadAction(initialData!.id, data);
+      } else {
+        await createLeadAction({ ...data, status: "new" });
+      }
+
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to save lead.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    setIsOpen(false);
-    router.refresh();
   };
 
   if (!isOpen) {
     if (isEdit) {
       return (
-        <button onClick={() => setIsOpen(true)} className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer" title="Edit lead">
+        <button
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
+          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          title="Edit lead"
+        >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
         </button>
       );
     }
     return (
-      <button onClick={() => setIsOpen(true)} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-gold px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer">
+      <button
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
+        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-gold px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+      >
         <UserPlus className="h-4 w-4" strokeWidth={2.5} />
         Add Lead
       </button>
@@ -70,6 +99,12 @@ export function LeadModal({ initialData }: { initialData?: Lead }) {
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
+
+        {error && (
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -134,16 +169,51 @@ export function LeadModal({ initialData }: { initialData?: Lead }) {
 
 export function DeleteLeadButton({ id, name }: { id: string; name: string }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleDelete = async () => {
-    if (!confirm(`Delete lead "${name}"? This cannot be undone.`)) return;
     setLoading(true);
-    await deleteLeadAction(id);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteLeadAction(id);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete lead.");
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <button onClick={handleDelete} disabled={loading} className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer" title="Delete lead">
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete lead"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title="Delete Lead"
+        message={`Are you sure you want to delete lead "${name}"? This cannot be undone.`}
+        confirmLabel="Delete Lead"
+        isDanger
+        loading={loading}
+        errorMessage={error}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          if (!loading) {
+            setIsOpen(false);
+            setError(null);
+          }
+        }}
+      />
+    </>
   );
 }

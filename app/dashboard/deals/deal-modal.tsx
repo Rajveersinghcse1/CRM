@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { GitPullRequest, Pencil, X, Trash2 } from "lucide-react";
 import { createDealAction, updateDealAction, deleteDealAction } from "@/app/actions/crm-actions";
 import type { Client, Service, Deal } from "@/types/crm";
+import { ConfirmModal } from "../components/confirm-modal";
 
 const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
 
@@ -20,41 +21,61 @@ export function DealModal({
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const form = new FormData(e.currentTarget);
+    setError(null);
+    try {
+      const form = new FormData(e.currentTarget);
+      const dealName = (form.get("deal_name") as string)?.trim();
+      const clientId = form.get("client_id") as string;
 
-    const data = {
-      deal_name: form.get("deal_name") as string,
-      client_id: form.get("client_id") as string,
-      service_id: (form.get("service_id") as string) || null,
-      estimated_value: Number(form.get("estimated_value")) || 0,
-      stage: (form.get("stage") as any) || (isEdit ? initialData?.stage : "new"),
-      probability: Number(form.get("probability")) || 30,
-      expected_close_date: (form.get("expected_close_date") as string) || null,
-      source: form.get("source") as string,
-      notes: form.get("notes") as string,
-    };
+      if (!dealName) {
+        throw new Error("Deal name is required.");
+      }
+      if (!clientId) {
+        throw new Error("Please select a client for this deal.");
+      }
 
-    if (isEdit) {
-      await updateDealAction(initialData!.id, data);
-    } else {
-      await createDealAction(data);
+      const data = {
+        deal_name: dealName,
+        client_id: clientId,
+        service_id: (form.get("service_id") as string) || null,
+        estimated_value: Number(form.get("estimated_value")) || 0,
+        stage: (form.get("stage") as any) || (isEdit ? initialData?.stage : "new"),
+        probability: Number(form.get("probability")) || 30,
+        expected_close_date: (form.get("expected_close_date") as string) || null,
+        source: (form.get("source") as string) || "",
+        notes: (form.get("notes") as string) || "",
+      };
+
+      if (isEdit) {
+        await updateDealAction(initialData!.id, data);
+      } else {
+        await createDealAction(data);
+      }
+
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to save deal.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    setIsOpen(false);
-    router.refresh();
   };
 
   if (!isOpen) {
     if (isEdit) {
       return (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
           className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
           title="Edit Deal"
         >
@@ -64,7 +85,10 @@ export function DealModal({
     }
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
         className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
       >
         <GitPullRequest className="h-4 w-4" strokeWidth={2.5} />
@@ -88,6 +112,12 @@ export function DealModal({
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
+
+        {error && (
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -222,23 +252,51 @@ export function DealModal({
 
 export function DeleteDealButton({ id, name }: { id: string; name: string }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete deal "${name}"? This cannot be undone.`)) return;
     setLoading(true);
-    await deleteDealAction(id);
-    router.refresh();
+    setError(null);
+    try {
+      await deleteDealAction(id);
+      setIsOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to delete deal.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={loading}
-      className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
-      title="Delete Deal"
-    >
-      <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        title="Delete Deal"
+      >
+        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title="Delete Deal"
+        message={`Are you sure you want to delete deal "${name}"? This cannot be undone.`}
+        confirmLabel="Delete Deal"
+        isDanger
+        loading={loading}
+        errorMessage={error}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          if (!loading) {
+            setIsOpen(false);
+            setError(null);
+          }
+        }}
+      />
+    </>
   );
 }

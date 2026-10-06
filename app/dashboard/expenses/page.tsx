@@ -89,8 +89,15 @@ export default async function ExpensesPage() {
             <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
               {expenses.map((exp) => (
                 <tr key={exp.id} className="hover:bg-violet-50/40 transition-colors">
-                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-[#1E293B] sm:pl-6">
-                    {exp.description}
+                  <td className="py-4 pl-4 pr-3 sm:pl-6 max-w-xs">
+                    <p className="text-xs sm:text-sm font-bold text-[#1E293B] leading-snug">
+                      {exp.description}
+                    </p>
+                    {exp.notes && (
+                      <p className="text-[11px] text-slate-500 font-medium line-clamp-2 mt-0.5">
+                        {exp.notes}
+                      </p>
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-xs font-semibold text-slate-600">
                     {exp.project ? (

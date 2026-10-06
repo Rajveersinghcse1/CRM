@@ -54,7 +54,7 @@ export default async function VendorBillsPage() {
         </div>
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-            Total Outstanding Vendor Payables
+            Total Pending Vendor Payables
           </p>
           <p className="text-3xl font-black text-orange-800 mt-0.5">
             {formatINR(totalOwed)}
@@ -102,7 +102,8 @@ export default async function VendorBillsPage() {
                 return (
                   <tr key={b.id} className="hover:bg-violet-50/40 transition-colors">
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-xs font-bold text-[#1E293B] sm:pl-6">
-                      {b.bill_number}
+                      <div>{b.bill_number}</div>
+                      {b.notes && <div className="text-[10px] text-slate-500 font-medium truncate max-w-[150px]">{b.notes}</div>}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-xs font-bold text-[#1E293B]">
                       {b.vendor?.name || "Vendor"}

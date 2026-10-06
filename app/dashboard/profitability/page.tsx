@@ -6,10 +6,11 @@ import Link from "next/link";
 export default async function ProfitabilityPage() {
   const [projects, clients] = await Promise.all([getProjects(), getClients()]);
 
-  const totalRevenue = projects.reduce((sum, p) => sum + p.project_value, 0);
+  const totalContractValue = projects.reduce((sum, p) => sum + p.project_value, 0);
+  const totalCollected = projects.reduce((sum, p) => sum + (p.totalCollected || 0), 0);
   const totalActualCost = projects.reduce((sum, p) => sum + (p.totalActualCost || 0), 0);
-  const totalGrossProfit = totalRevenue - totalActualCost;
-  const overallMargin = totalRevenue > 0 ? ((totalGrossProfit / totalRevenue) * 100).toFixed(1) : "0.0";
+  const totalGrossProfit = totalCollected - totalActualCost;
+  const overallMargin = totalCollected > 0 ? ((totalGrossProfit / totalCollected) * 100).toFixed(1) : "0.0";
 
   // Client Profitability Aggregation
   const clientProfitMap: Record<
@@ -23,7 +24,7 @@ export default async function ProfitabilityPage() {
       const c = clients.find((client) => client.id === cid) || { id: cid, name: "Client", company_name: "" } as any;
       clientProfitMap[cid] = { client: c, revenue: 0, cost: 0, profit: 0, margin: 0, count: 0 };
     }
-    clientProfitMap[cid].revenue += p.project_value;
+    clientProfitMap[cid].revenue += p.totalCollected || 0;
     clientProfitMap[cid].cost += p.totalActualCost || 0;
     clientProfitMap[cid].profit += p.grossProfit || 0;
     clientProfitMap[cid].count += 1;
@@ -54,22 +55,41 @@ export default async function ProfitabilityPage() {
       </div>
 
       {/* Executive Financial Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Gross Contract Value</p>
-          <p className="text-2xl font-black text-[#1E293B] mt-0.5">{formatINR(totalRevenue)}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase text-slate-500">Gross Contract Value</p>
+            <p className="text-2xl font-black text-[#1E293B] mt-0.5">{formatINR(totalContractValue)}</p>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 mt-1">Deal Close Total</span>
         </div>
-        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Actual Delivery Costs</p>
-          <p className="text-2xl font-black text-rose-700 mt-0.5">{formatINR(totalActualCost)}</p>
+        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase text-slate-500">Collected Cash</p>
+            <p className="text-2xl font-black text-emerald-800 mt-0.5">{formatINR(totalCollected)}</p>
+          </div>
+          <span className="text-[10px] font-bold text-emerald-700 mt-1">Cash Received</span>
         </div>
-        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Gross Profit Realized</p>
-          <p className="text-2xl font-black text-emerald-800 mt-0.5">{formatINR(totalGrossProfit)}</p>
+        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase text-slate-500">Actual Delivery Costs</p>
+            <p className="text-2xl font-black text-rose-700 mt-0.5">{formatINR(totalActualCost)}</p>
+          </div>
+          <span className="text-[10px] font-bold text-rose-700 mt-1">Expenses Logged</span>
         </div>
-        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop">
-          <p className="text-[11px] font-black uppercase text-slate-500">Gross Margin %</p>
-          <p className="text-2xl font-black text-[#8B5CF6] mt-0.5">{overallMargin}%</p>
+        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase text-slate-500">Gross Profit Realized</p>
+            <p className="text-2xl font-black text-emerald-800 mt-0.5">{formatINR(totalGrossProfit)}</p>
+          </div>
+          <span className="text-[10px] font-bold text-slate-500 mt-1">Collected − Cost</span>
+        </div>
+        <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-4 shadow-pop flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase text-slate-500">Gross Margin %</p>
+            <p className="text-2xl font-black text-[#8B5CF6] mt-0.5">{overallMargin}%</p>
+          </div>
+          <span className="text-[10px] font-bold text-purple-700 mt-1">Profit / Collected</span>
         </div>
       </div>
 
@@ -94,7 +114,10 @@ export default async function ProfitabilityPage() {
                   Client
                 </th>
                 <th className="px-3 py-3.5 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
-                  Revenue
+                  Contract Value
+                </th>
+                <th className="px-3 py-3.5 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                  Collected Cash
                 </th>
                 <th className="px-3 py-3.5 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Actual Cost
@@ -120,6 +143,9 @@ export default async function ProfitabilityPage() {
                   </td>
                   <td className="whitespace-nowrap px-3 py-3.5 text-xs font-black text-[#1E293B]">
                     {formatINR(p.project_value)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3.5 text-xs font-bold text-emerald-800">
+                    {formatINR(p.totalCollected || 0)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3.5 text-xs font-bold text-rose-700">
                     {formatINR(p.totalActualCost || 0)}
@@ -160,7 +186,7 @@ export default async function ProfitabilityPage() {
                   Projects
                 </th>
                 <th className="px-3 py-3.5 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
-                  Total Revenue
+                  Collected Cash
                 </th>
                 <th className="px-3 py-3.5 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
                   Total Cost

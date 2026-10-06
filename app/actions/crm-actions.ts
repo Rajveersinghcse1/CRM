@@ -18,6 +18,8 @@ import {
   updateProject,
   deleteProject,
   createProjectCategory,
+  updateProjectCategory,
+  deleteProjectCategory,
   createExpense,
   updateExpense,
   deleteExpense,
@@ -28,6 +30,8 @@ import {
   updateInvoice,
   deleteInvoice,
   createClientPayment,
+  updateClientPayment,
+  deleteClientPayment,
   createTask,
   updateTask,
   deleteTask,
@@ -153,13 +157,15 @@ export async function createVendorAction(data: any) {
 
 export async function updateVendorAction(id: string, data: any) {
   const result = await updateVendor(id, data);
+  if (!result) throw new Error("Failed to update vendor: record not found.");
   revalidatePath("/dashboard/vendors");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteVendorAction(id: string) {
-  await deleteVendor(id);
+  const success = await deleteVendor(id);
+  if (!success) throw new Error("Failed to delete vendor: record not found.");
   revalidatePath("/dashboard/vendors");
   revalidatePath("/dashboard/audit-logs");
 }
@@ -173,13 +179,15 @@ export async function createActivityAction(data: any) {
 
 export async function updateActivityAction(id: string, data: any) {
   const result = await updateActivity(id, data);
+  if (!result) throw new Error("Failed to update activity: record not found.");
   revalidatePath("/dashboard/activities");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteActivityAction(id: string) {
-  await deleteActivity(id);
+  const success = await deleteActivity(id);
+  if (!success) throw new Error("Failed to delete activity: record not found.");
   revalidatePath("/dashboard/activities");
   revalidatePath("/dashboard/audit-logs");
 }
@@ -188,45 +196,52 @@ export async function deleteActivityAction(id: string) {
 
 export async function updateLeadAction(id: string, data: any) {
   const result = await updateLead(id, data);
+  if (!result) throw new Error("Failed to update lead: record not found.");
   revalidatePath("/dashboard/leads");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteLeadAction(id: string) {
-  await deleteLead(id);
+  const success = await deleteLead(id);
+  if (!success) throw new Error("Failed to delete lead: record not found.");
   revalidatePath("/dashboard/leads");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateCompanyAction(id: string, data: any) {
   const result = await updateCompany(id, data);
+  if (!result) throw new Error("Failed to update company: record not found.");
   revalidatePath("/dashboard/companies");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteCompanyAction(id: string) {
-  await deleteCompany(id);
+  const success = await deleteCompany(id);
+  if (!success) throw new Error("Failed to delete company: record not found.");
   revalidatePath("/dashboard/companies");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateDealAction(id: string, data: any) {
   const result = await updateDeal(id, data);
+  if (!result) throw new Error("Failed to update deal: record not found.");
   revalidatePath("/dashboard/deals");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteDealAction(id: string) {
-  await deleteDeal(id);
+  const success = await deleteDeal(id);
+  if (!success) throw new Error("Failed to delete deal: record not found.");
   revalidatePath("/dashboard/deals");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateProjectAction(id: string, data: any) {
   const result = await updateProject(id, data);
+  if (!result) throw new Error("Failed to update project: record not found.");
   revalidatePath("/dashboard/projects");
   revalidatePath(`/dashboard/projects/${id}`);
   revalidatePath("/dashboard/audit-logs");
@@ -234,13 +249,15 @@ export async function updateProjectAction(id: string, data: any) {
 }
 
 export async function deleteProjectAction(id: string) {
-  await deleteProject(id);
+  const success = await deleteProject(id);
+  if (!success) throw new Error("Failed to delete project: record not found.");
   revalidatePath("/dashboard/projects");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateExpenseAction(id: string, data: any) {
   const result = await updateExpense(id, data);
+  if (!result) throw new Error("Failed to update expense: record not found.");
   if (data.project_id) revalidatePath(`/dashboard/projects/${data.project_id}`);
   revalidatePath("/dashboard/expenses");
   revalidatePath("/dashboard/budgets");
@@ -249,7 +266,8 @@ export async function updateExpenseAction(id: string, data: any) {
 }
 
 export async function deleteExpenseAction(id: string, projectId?: string) {
-  await deleteExpense(id);
+  const success = await deleteExpense(id);
+  if (!success) throw new Error("Failed to delete expense: record not found.");
   if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
   revalidatePath("/dashboard/expenses");
   revalidatePath("/dashboard/budgets");
@@ -258,19 +276,22 @@ export async function deleteExpenseAction(id: string, projectId?: string) {
 
 export async function updateVendorBillAction(id: string, data: any) {
   const result = await updateVendorBill(id, data);
+  if (!result) throw new Error("Failed to update vendor bill: record not found.");
   revalidatePath("/dashboard/vendor-bills");
   revalidatePath("/dashboard/audit-logs");
   return result;
 }
 
 export async function deleteVendorBillAction(id: string) {
-  await deleteVendorBill(id);
+  const success = await deleteVendorBill(id);
+  if (!success) throw new Error("Failed to delete vendor bill: record not found.");
   revalidatePath("/dashboard/vendor-bills");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateTaskAction(id: string, data: any) {
   const result = await updateTask(id, data);
+  if (!result) throw new Error("Failed to update task: record not found.");
   if (data.project_id) revalidatePath(`/dashboard/projects/${data.project_id}`);
   revalidatePath("/dashboard/tasks");
   revalidatePath("/dashboard/calendar");
@@ -279,7 +300,8 @@ export async function updateTaskAction(id: string, data: any) {
 }
 
 export async function deleteTaskAction(id: string, projectId?: string) {
-  await deleteTask(id);
+  const success = await deleteTask(id);
+  if (!success) throw new Error("Failed to delete task: record not found.");
   if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
   revalidatePath("/dashboard/tasks");
   revalidatePath("/dashboard/calendar");
@@ -288,6 +310,7 @@ export async function deleteTaskAction(id: string, projectId?: string) {
 
 export async function updateClientAction(id: string, data: any) {
   const result = await updateClient(id, data);
+  if (!result) throw new Error("Failed to update client: record not found.");
   revalidatePath("/dashboard/clients");
   revalidatePath(`/dashboard/clients/${id}`);
   revalidatePath("/dashboard/audit-logs");
@@ -295,13 +318,15 @@ export async function updateClientAction(id: string, data: any) {
 }
 
 export async function deleteClientAction(id: string) {
-  await deleteClient(id);
+  const success = await deleteClient(id);
+  if (!success) throw new Error("Failed to delete client: record not found.");
   revalidatePath("/dashboard/clients");
   revalidatePath("/dashboard/audit-logs");
 }
 
 export async function updateInvoiceAction(id: string, data: any) {
   const result = await updateInvoice(id, data);
+  if (!result) throw new Error("Failed to update invoice: record not found.");
   revalidatePath("/dashboard/invoices");
   revalidatePath(`/dashboard/invoices/${id}`);
   revalidatePath("/dashboard/audit-logs");
@@ -309,10 +334,55 @@ export async function updateInvoiceAction(id: string, data: any) {
 }
 
 export async function deleteInvoiceAction(id: string) {
-  const result = await deleteInvoice(id);
+  const success = await deleteInvoice(id);
+  if (!success) throw new Error("Failed to delete invoice: record not found.");
   revalidatePath("/dashboard/invoices");
+  revalidatePath("/dashboard/revenue");
+  revalidatePath("/dashboard/audit-logs");
+}
+
+export async function updateProjectCategoryAction(id: string, data: any, projectId?: string) {
+  const result = await updateProjectCategory(id, data);
+  if (!result) throw new Error("Failed to update category: record not found.");
+  const pId = projectId || data.project_id;
+  if (pId) revalidatePath(`/dashboard/projects/${pId}`);
+  revalidatePath("/dashboard/categories");
+  revalidatePath("/dashboard/budgets");
   revalidatePath("/dashboard/audit-logs");
   return result;
+}
+
+export async function deleteProjectCategoryAction(id: string, projectId?: string) {
+  const success = await deleteProjectCategory(id);
+  if (!success) throw new Error("Failed to delete category: record not found.");
+  if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath("/dashboard/categories");
+  revalidatePath("/dashboard/budgets");
+  revalidatePath("/dashboard/audit-logs");
+}
+
+export async function updateClientPaymentAction(id: string, data: any, projectId?: string) {
+  const result = await updateClientPayment(id, data);
+  if (!result) throw new Error("Failed to update payment: record not found.");
+  const pId = projectId || data.project_id;
+  if (pId) revalidatePath(`/dashboard/projects/${pId}`);
+  revalidatePath("/dashboard/payments");
+  revalidatePath("/dashboard/invoices");
+  revalidatePath("/dashboard/revenue");
+  revalidatePath("/dashboard/profitability");
+  revalidatePath("/dashboard/audit-logs");
+  return result;
+}
+
+export async function deleteClientPaymentAction(id: string, projectId?: string) {
+  const success = await deleteClientPayment(id);
+  if (!success) throw new Error("Failed to delete payment: record not found.");
+  if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath("/dashboard/payments");
+  revalidatePath("/dashboard/invoices");
+  revalidatePath("/dashboard/revenue");
+  revalidatePath("/dashboard/profitability");
+  revalidatePath("/dashboard/audit-logs");
 }
 
 export async function saveProjectQuotationAction(

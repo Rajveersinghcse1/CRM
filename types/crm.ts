@@ -201,6 +201,7 @@ export interface Project {
   totalCollected?: number;
   totalOutstanding?: number;
   totalActualCost?: number;
+  budgetLeft?: number;
   remainingBudget?: number;
   grossProfit?: number;
   grossMargin?: number;
@@ -352,7 +353,7 @@ export interface ClientPayment {
   payment_date: string;
   payment_method: PaymentMethod;
   reference_number?: string | null;
-  status: "completed" | "pending" | "failed";
+  status: "completed" | "pending" | "failed" | "cancelled";
   notes?: string | null;
   attachment_url?: string | null;
   recorded_by?: string | null;

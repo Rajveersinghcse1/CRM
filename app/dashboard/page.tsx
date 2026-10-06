@@ -227,7 +227,7 @@ export default async function DashboardPage() {
                 {formatINR(data.grossProfit)}
               </p>
               <p className="mt-1 text-xs font-bold text-slate-500">
-                Receivables: {formatINR(data.clientReceivables)}
+                Pending Amount: {formatINR(data.clientReceivables)}
               </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-amber-100 border-2 border-[#1E293B] flex items-center justify-center text-amber-700 shrink-0 shadow-pop-sm">
