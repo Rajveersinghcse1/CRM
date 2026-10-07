@@ -28,6 +28,61 @@ export const calcGrossMarginPct = (revenue: number, actualCost: number): number 
   return roundCurrency((profit / revenue) * 100);
 };
 
+/**
+ * Client Pending: Money client still owes us
+ * Formula: Contract Value - Total Client Payments
+ */
+export const calcClientPending = (contractValue: number, totalCollected: number): number => {
+  return roundCurrency(Math.max(0, contractValue - totalCollected));
+};
+
+/**
+ * Available Balance: Real unspent money currently available from collected funds
+ * Formula: Total Collected - Total Project Expenses
+ */
+export const calcAvailableBalance = (totalCollected: number, totalExpenses: number): number => {
+  return roundCurrency(totalCollected - totalExpenses);
+};
+
+/**
+ * Expected Final Profit: Profit upon full contract completion
+ * Formula: Contract Value - Total Project Expenses
+ */
+export const calcExpectedProfit = (contractValue: number, totalExpenses: number): number => {
+  return roundCurrency(contractValue - totalExpenses);
+};
+
+/**
+ * Expected Final Margin %: (Expected Profit / Contract Value) * 100
+ */
+export const calcExpectedMarginPct = (contractValue: number, totalExpenses: number): number => {
+  if (contractValue <= 0) return 0;
+  return roundCurrency(((contractValue - totalExpenses) / contractValue) * 100);
+};
+
+/**
+ * Standard expense categories recommended for project/agency CRM
+ */
+export const STANDARD_EXPENSE_CATEGORIES = [
+  "Meta Ads",
+  "Google Ads",
+  "Influencer Marketing",
+  "Models & Talent",
+  "Photography",
+  "Videography & Shoot",
+  "Studio & Venue",
+  "Production & Decor",
+  "Printing & Branding",
+  "Freelancers & Crew",
+  "Travel & Logistics",
+  "Food & Hospitality",
+  "Props & Equipment",
+  "Software & Subscriptions",
+  "Miscellaneous",
+  "Other",
+] as const;
+
+
 export const calcOutstandingBalance = (totalInvoiced: number, amountPaid: number): number => {
   return roundCurrency(Math.max(0, totalInvoiced - amountPaid));
 };

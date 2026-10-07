@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/login(.*)",
+  "/sign-in(.*)",
   "/sign-up(.*)",
   "/dashboard/projects/(.*)/quotation(.*)",
   "/dashboard/invoices/(.*)/print(.*)",
@@ -16,10 +17,16 @@ const isAdminRoute = createRouteMatcher([
   "/api/admin(.*)",
 ]);
 
-export const proxy = clerkMiddleware(async (auth, request) => {
-  if (isPublicRoute(request)) {
-    return;
-  }
+const publishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  process.env.CLERK_PUBLISHABLE_KEY ||
+  "pk_test_dXNhYmxlLWFudGVsb3BlLTU5OC5jbGVyay5hY2NvdW50cy5kZXYk";
+
+export const proxy = clerkMiddleware(
+  async (auth, request) => {
+    if (isPublicRoute(request)) {
+      return;
+    }
 
   const session = await auth();
 
@@ -47,7 +54,7 @@ export const proxy = clerkMiddleware(async (auth, request) => {
       return NextResponse.redirect(url);
     }
   }
-});
+}, { publishableKey });
 
 export default proxy;
 

@@ -81,7 +81,20 @@ interface CrmStore {
 
 const INITIAL_SEED: CrmStore = {
   companies: [],
-  clients: [],
+  clients: [
+    {
+      id: "client-balaji",
+      name: "Balaji Group",
+      company_name: "Balaji Group Enterprises",
+      email: "contact@balajigroup.in",
+      phone: "+91 98765 43210",
+      status: "active",
+      source: "Referral",
+      notes: "Client reference project from todo.md workflow",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ],
   services: [
     {
       id: "srv-1",
@@ -136,15 +149,154 @@ const INITIAL_SEED: CrmStore = {
   ],
   leads: [],
   deals: [],
-  projects: [],
-  project_categories: [],
+  projects: [
+    {
+      id: "proj-garba-marketing",
+      project_code: "PRJ-001",
+      name: "Garba Event Marketing",
+      client_id: "client-balaji",
+      project_value: 60000,
+      overall_budget: 25000,
+      status: "active",
+      priority: "high",
+      description: "Garba Event Marketing campaign (Meta Ads, Model shoot & promo coverage) as specified in todo.md",
+      start_date: "2026-10-01",
+      end_date: "2026-10-25",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ],
+  project_categories: [
+    {
+      id: "cat-meta-ads",
+      project_id: "proj-garba-marketing",
+      name: "Meta Ads",
+      budget: 10000,
+      sort_order: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "cat-models",
+      project_id: "proj-garba-marketing",
+      name: "Models",
+      budget: 6000,
+      sort_order: 2,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "cat-shoot",
+      project_id: "proj-garba-marketing",
+      name: "Shoot",
+      budget: 5000,
+      sort_order: 3,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "cat-misc",
+      project_id: "proj-garba-marketing",
+      name: "Miscellaneous",
+      budget: 4000,
+      sort_order: 4,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ],
   project_subcategories: [],
   vendors: [],
-  expenses: [],
+  expenses: [
+    {
+      id: "exp-1",
+      project_id: "proj-garba-marketing",
+      client_id: "client-balaji",
+      category_id: "cat-meta-ads",
+      description: "Meta Ads campaign spend",
+      amount: 8000,
+      expense_date: "2026-10-02",
+      payment_status: "paid",
+      payment_method: "bank_transfer",
+      notes: "Campaign advance paid to Meta",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "exp-2",
+      project_id: "proj-garba-marketing",
+      client_id: "client-balaji",
+      category_id: "cat-models",
+      description: "Model photoshoot charges",
+      amount: 5000,
+      expense_date: "2026-10-03",
+      payment_status: "paid",
+      payment_method: "upi",
+      notes: "Talent fee for teaser shoot",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "exp-3",
+      project_id: "proj-garba-marketing",
+      client_id: "client-balaji",
+      category_id: "cat-shoot",
+      description: "Shoot & camera equipment",
+      amount: 4000,
+      expense_date: "2026-10-05",
+      payment_status: "paid",
+      payment_method: "bank_transfer",
+      notes: "Studio and camera production gear",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "exp-4",
+      project_id: "proj-garba-marketing",
+      client_id: "client-balaji",
+      category_id: "cat-misc",
+      description: "Miscellaneous logistics & refreshments",
+      amount: 1000,
+      expense_date: "2026-10-06",
+      payment_status: "paid",
+      payment_method: "cash",
+      notes: "Team travel and snacks",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ],
   vendor_bills: [],
   invoices: [],
   invoice_items: [],
-  client_payments: [],
+  client_payments: [
+    {
+      id: "pay-1",
+      payment_number: "RCP-001",
+      client_id: "client-balaji",
+      project_id: "proj-garba-marketing",
+      amount: 20000,
+      payment_date: "2026-10-01",
+      payment_method: "bank_transfer",
+      reference_number: "NEFT-88391",
+      status: "completed",
+      notes: "Advance payment (Payment 1)",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "pay-2",
+      payment_number: "RCP-002",
+      client_id: "client-balaji",
+      project_id: "proj-garba-marketing",
+      amount: 15000,
+      payment_date: "2026-10-04",
+      payment_method: "upi",
+      reference_number: "UPI-481902",
+      status: "completed",
+      notes: "Second milestone payment (Payment 2)",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ],
   tasks: [],
   activities: [],
   audit_logs: [],
@@ -790,18 +942,25 @@ export const getProjects = cache(async (): Promise<Project[]> => {
       (p) => p.project_id === proj.id && p.status === "completed"
     );
     const totalCollected = projectPayments.reduce((sum, p) => sum + Number(p.amount), 0);
-    const totalOutstanding = Math.max(0, proj.project_value - totalCollected);
-
-    const grossProfit = calcGrossProfit(totalCollected, totalActualCost);
-    const grossMargin = calcGrossMarginPct(totalCollected, totalActualCost);
+    const clientPending = Math.max(0, proj.project_value - totalCollected);
+    const totalOutstanding = clientPending;
+    const availableBalance = totalCollected - totalActualCost;
+    const budgetLeft = availableBalance;
+    const expectedProfit = proj.project_value - totalActualCost;
+    const expectedMargin = proj.project_value > 0 ? Math.round(((proj.project_value - totalActualCost) / proj.project_value) * 100) : 0;
+    const grossProfit = expectedProfit;
+    const grossMargin = expectedMargin;
     const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
-    const budgetLeft = totalCollected - totalActualCost;
 
     return {
       ...proj,
       totalActualCost,
       totalCollected,
       totalOutstanding,
+      clientPending,
+      availableBalance,
+      expectedProfit,
+      expectedMargin,
       grossProfit,
       grossMargin,
       remainingBudget,
@@ -830,11 +989,15 @@ export const getProjectById = cache(async (id: string): Promise<Project | null> 
       const totalCollected = payments
         .filter((p) => p.status === "completed")
         .reduce((sum, p) => sum + Number(p.amount), 0);
-      const totalOutstanding = Math.max(0, proj.project_value - totalCollected);
-      const grossProfit = calcGrossProfit(totalCollected, totalActualCost);
-      const grossMargin = calcGrossMarginPct(totalCollected, totalActualCost);
+      const clientPending = Math.max(0, proj.project_value - totalCollected);
+      const totalOutstanding = clientPending;
+      const availableBalance = totalCollected - totalActualCost;
+      const budgetLeft = availableBalance;
+      const expectedProfit = proj.project_value - totalActualCost;
+      const expectedMargin = proj.project_value > 0 ? Math.round(((proj.project_value - totalActualCost) / proj.project_value) * 100) : 0;
+      const grossProfit = expectedProfit;
+      const grossMargin = expectedMargin;
       const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
-      const budgetLeft = totalCollected - totalActualCost;
 
       return {
         ...proj,
@@ -842,6 +1005,10 @@ export const getProjectById = cache(async (id: string): Promise<Project | null> 
         totalActualCost,
         totalCollected,
         totalOutstanding,
+        clientPending,
+        availableBalance,
+        expectedProfit,
+        expectedMargin,
         grossProfit,
         grossMargin,
         remainingBudget,
@@ -2269,12 +2436,16 @@ export const getProjectProfitability = cache(async (
   const totalActualCost = project.totalActualCost || 0;
   const contractValue = project.project_value;
   const collectedAmount = project.totalCollected || 0;
-  const outstandingAmount = Math.max(0, contractValue - collectedAmount);
+  const clientPending = Math.max(0, contractValue - collectedAmount);
+  const outstandingAmount = clientPending;
   const overallBudget = project.overall_budget;
   const remainingBudget = Math.max(0, overallBudget - totalActualCost);
   const budgetUtilizationPct = calcUtilizationPct(totalActualCost, overallBudget);
-  const grossProfit = calcGrossProfit(collectedAmount, totalActualCost);
-  const grossMarginPct = calcGrossMarginPct(collectedAmount, totalActualCost);
+  const availableBalance = collectedAmount - totalActualCost;
+  const expectedProfit = contractValue - totalActualCost;
+  const expectedMarginPct = contractValue > 0 ? Math.round(((contractValue - totalActualCost) / contractValue) * 100) : 0;
+  const grossProfit = expectedProfit;
+  const grossMarginPct = expectedMarginPct;
 
   const categoryBreakdown = categories.map((cat) => ({
     categoryId: cat.id,
@@ -2293,12 +2464,16 @@ export const getProjectProfitability = cache(async (
     contractValue,
     collectedAmount,
     outstandingAmount,
+    clientPending,
     overallBudget,
     totalActualCost,
+    availableBalance,
     remainingBudget,
     budgetUtilizationPct,
     grossProfit,
     grossMarginPct,
+    expectedProfit,
+    expectedMarginPct,
     status: project.status,
     categories: categoryBreakdown,
   };
@@ -2310,10 +2485,14 @@ export interface ExecutiveDashboardData {
   activeProjects: number;
   totalPipeline: number;
   clientReceivables: number;
+  clientPending: number;
   collectedRevenue: number;
   projectCosts: number;
+  availableBalance: number;
   grossProfit: number;
   grossMarginPct: number;
+  expectedProfit: number;
+  expectedMarginPct: number;
   budgetAlerts: Array<{
     projectName: string;
     categoryName: string;
@@ -2345,10 +2524,14 @@ export const getExecutiveDashboardData = cache(async (): Promise<ExecutiveDashbo
     .filter((p) => p.status === "completed")
     .reduce((sum, p) => sum + Number(p.amount), 0);
   const clientReceivables = Math.max(0, totalPipeline - collectedRevenue);
+  const clientPending = clientReceivables;
 
   const projectCosts = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-  const grossProfit = calcGrossProfit(collectedRevenue, projectCosts);
-  const grossMarginPct = calcGrossMarginPct(collectedRevenue, projectCosts);
+  const availableBalance = collectedRevenue - projectCosts;
+  const expectedProfit = totalPipeline - projectCosts;
+  const expectedMarginPct = totalPipeline > 0 ? Math.round(((totalPipeline - projectCosts) / totalPipeline) * 100) : 0;
+  const grossProfit = expectedProfit;
+  const grossMarginPct = expectedMarginPct;
 
   // Budget Alerts (utilization >= 80%) — fetch all project categories concurrently in parallel
   const budgetAlerts: ExecutiveDashboardData["budgetAlerts"] = [];
@@ -2377,10 +2560,14 @@ export const getExecutiveDashboardData = cache(async (): Promise<ExecutiveDashbo
     activeProjects,
     totalPipeline,
     clientReceivables,
+    clientPending,
     collectedRevenue,
     projectCosts,
+    availableBalance,
     grossProfit,
     grossMarginPct,
+    expectedProfit,
+    expectedMarginPct,
     budgetAlerts,
     recentPayments: payments.slice(0, 5),
     todayActivities: activities.slice(0, 5),

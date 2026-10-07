@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Receipt, Pencil, X, Trash2 } from "lucide-react";
+import { Receipt, Pencil, X, Trash2, Info } from "lucide-react";
 import { createExpenseAction, updateExpenseAction, deleteExpenseAction } from "@/app/actions/crm-actions";
 import type { Project, Vendor, Expense } from "@/types/crm";
+import { STANDARD_EXPENSE_CATEGORIES } from "@/utils/finance-calc";
 import { ConfirmModal } from "../components/confirm-modal";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-2xs";
 
 export function ExpenseModal({
   projects,
@@ -81,10 +82,10 @@ export function ExpenseModal({
             setError(null);
             setIsOpen(true);
           }}
-          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition-all cursor-pointer"
           title="Edit Expense"
         >
-          <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <Pencil className="h-3.5 w-3.5" />
         </button>
       );
     }
@@ -94,51 +95,61 @@ export function ExpenseModal({
           setError(null);
           setIsOpen(true);
         }}
-        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition-all cursor-pointer"
       >
-        <Receipt className="h-4 w-4" strokeWidth={2.5} />
-        Add Expense
+        <Receipt className="h-3.5 w-3.5" />
+        <span>+ Log Expense</span>
       </button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border border-slate-200 p-6 text-left shadow-xl transition-all">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-rose-500 border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">{isEdit ? "Edit Expense" : "Record Operational Expense"}</h3>
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+            <h3 className="text-base font-bold text-slate-900">
+              {isEdit ? "Edit Project Expense" : "Record Project Expense"}
+            </h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer"
           >
-            <X className="h-4 w-4" strokeWidth={2.5} />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
+        {/* Guidance Note */}
+        <div className="mt-3 p-2.5 rounded-xl bg-rose-50/70 border border-rose-200/80 text-[11px] text-rose-900 flex items-start gap-2">
+          <Info className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5" />
+          <span>
+            <strong>Dual-Balance Impact:</strong> Expenses draw from collected funds to reduce <em>Available Balance</em>. They do <strong>not</strong> change what the client owes.
+          </span>
+        </div>
+
         {error && (
-          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+          <div className="mt-3 p-2.5 rounded-xl border border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Description *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Description *</label>
             <input
               type="text"
               name="description"
               required
               defaultValue={initialData?.description}
-              placeholder="e.g. Venue sound engineering & mic setups"
+              placeholder="e.g. Meta Ads campaign advance"
               className={INPUT}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Project *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Project *</label>
             <select
               name="project_id"
               required
@@ -155,24 +166,24 @@ export function ExpenseModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Amount (?) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Amount (₹) *</label>
               <input
                 type="number"
                 name="amount"
                 required
                 defaultValue={initialData?.amount}
-                placeholder="25000"
+                placeholder="8000"
                 className={INPUT}
               />
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Vendor (Optional)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Paid To / Vendor</label>
               <select
                 name="vendor_id"
                 defaultValue={initialData?.vendor_id || ""}
                 className={INPUT}
               >
-                <option value="">None / Direct</option>
+                <option value="">Direct / Meta / Other</option>
                 {vendors.map((v) => (
                   <option key={v.id} value={v.id}>
                     {v.name}
@@ -184,7 +195,7 @@ export function ExpenseModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Date</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Expense Date</label>
               <input
                 type="date"
                 name="expense_date"
@@ -193,13 +204,13 @@ export function ExpenseModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Payment Method</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Payment Method</label>
               <select
                 name="payment_method"
                 defaultValue={initialData?.payment_method || "bank_transfer"}
                 className={INPUT}
               >
-                <option value="bank_transfer">Bank Transfer</option>
+                <option value="bank_transfer">Bank Transfer / Company Account</option>
                 <option value="upi">UPI</option>
                 <option value="cash">Cash</option>
                 <option value="card">Card</option>
@@ -207,47 +218,42 @@ export function ExpenseModal({
             </div>
           </div>
 
-          {isEdit && (
-            <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Payment Status</label>
-              <select
-                name="payment_status"
-                defaultValue={initialData?.payment_status || "paid"}
-                className={INPUT}
-              >
-                <option value="paid">Paid</option>
-                <option value="pending">Pending</option>
-                <option value="partially_paid">Partially Paid</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          )}
-
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Notes</label>
-            <textarea
-              name="notes"
-              rows={2}
-              defaultValue={initialData?.notes || ""}
-              placeholder="Expense notes or receipt refs..."
+            <label className="block text-xs font-bold text-slate-700 mb-1">Bill / Reference Number</label>
+            <input
+              type="text"
+              name="bill_number"
+              defaultValue={initialData?.bill_number || ""}
+              placeholder="e.g. INV-META-901"
               className={INPUT}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Notes / Remarks</label>
+            <textarea
+              name="notes"
+              rows={2}
+              defaultValue={initialData?.notes || ""}
+              placeholder="e.g. Campaign advance for festive launch"
+              className={INPUT}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer"
+              className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] bg-rose-600 px-5 py-2 text-xs font-black text-white shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
-              {loading ? "Saving..." : isEdit ? "Update Expense" : "Record Expense"}
+              {loading ? "Saving..." : isEdit ? "Update Expense" : "Save Expense"}
             </button>
           </div>
         </form>
@@ -256,13 +262,21 @@ export function ExpenseModal({
   );
 }
 
-export function DeleteExpenseButton({ id, description, projectId }: { id: string; description: string; projectId?: string }) {
+export function DeleteExpenseButton({
+  id,
+  description,
+  projectId,
+}: {
+  id: string;
+  description: string;
+  projectId?: string;
+}) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleDelete = async () => {
+  const handleConfirm = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -270,7 +284,7 @@ export function DeleteExpenseButton({ id, description, projectId }: { id: string
       setIsOpen(false);
       router.refresh();
     } catch (err: any) {
-      console.error(err);
+      console.error("Error deleting expense:", err);
       setError(err?.message || "Failed to delete expense.");
     } finally {
       setLoading(false);
@@ -280,28 +294,26 @@ export function DeleteExpenseButton({ id, description, projectId }: { id: string
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
-        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
+        disabled={loading}
+        className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer disabled:opacity-50"
         title="Delete Expense"
       >
-        <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+        <Trash2 className="h-3.5 w-3.5" />
       </button>
 
       <ConfirmModal
         isOpen={isOpen}
-        title="Delete Expense"
-        message={`Are you sure you want to delete expense "${description}"? This cannot be undone.`}
-        confirmLabel="Delete Expense"
-        isDanger
+        onClose={() => setIsOpen(false)}
+        onConfirm={handleConfirm}
+        title="Delete Expense Record"
+        message={`Are you sure you want to delete "${description}"? This cost will be removed from project expenses.`}
+        confirmText="Yes, Delete Expense"
         loading={loading}
-        errorMessage={error}
-        onConfirm={handleDelete}
-        onCancel={() => {
-          if (!loading) {
-            setIsOpen(false);
-            setError(null);
-          }
-        }}
+        error={error}
       />
     </>
   );

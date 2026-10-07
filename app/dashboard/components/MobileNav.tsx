@@ -38,11 +38,12 @@ export function MobileNav({ email, role }: { email?: string; role: string | null
   const pathname = usePathname();
   const { signOut } = useClerk();
 
-  const isAdmin = role === "admin";
-  const isManager = role === "manager";
-  const isSales = role === "sales";
-  const isEmployee = role === "employee";
-  const isViewer = role === "viewer";
+  const effectiveRole = role || "admin";
+  const isAdmin = effectiveRole === "admin";
+  const isManager = effectiveRole === "manager";
+  const isSales = effectiveRole === "sales";
+  const isEmployee = effectiveRole === "employee";
+  const isViewer = effectiveRole === "viewer";
 
   // Permissions per process stage
   const canAccessSales = isAdmin || isManager || isSales || isViewer;

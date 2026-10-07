@@ -196,15 +196,19 @@ export interface Project {
   created_at: string;
   updated_at: string;
 
-  // Computed / Joined fields
+  // Computed / Joined fields (Aligned with todo.md Agency Financial Model)
   categories?: ProjectCategory[];
   totalCollected?: number;
-  totalOutstanding?: number;
-  totalActualCost?: number;
-  budgetLeft?: number;
+  totalOutstanding?: number; // legacy alias for clientPending
+  clientPending?: number; // Contract Value - Total Client Payments
+  totalActualCost?: number; // Total Project Expenses
+  availableBalance?: number; // Total Collected - Total Expenses
+  budgetLeft?: number; // legacy alias for availableBalance
   remainingBudget?: number;
-  grossProfit?: number;
+  grossProfit?: number; // Expected Final Profit (Contract Value - Total Expenses)
   grossMargin?: number;
+  expectedProfit?: number;
+  expectedMargin?: number;
 }
 
 export interface ProjectCategory {
@@ -444,12 +448,16 @@ export interface ProjectProfitabilitySummary {
   contractValue: number;
   collectedAmount: number;
   outstandingAmount: number;
+  clientPending: number;
   overallBudget: number;
   totalActualCost: number;
+  availableBalance: number;
   remainingBudget: number;
   budgetUtilizationPct: number;
   grossProfit: number;
   grossMarginPct: number;
+  expectedProfit: number;
+  expectedMarginPct: number;
   status: ProjectStatus;
   categories: {
     categoryId: string;

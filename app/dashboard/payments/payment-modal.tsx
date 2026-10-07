@@ -11,7 +11,7 @@ import {
 import { ConfirmModal } from "@/app/dashboard/components/confirm-modal";
 import type { Client, Project, Invoice, ClientPayment } from "@/types/crm";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-2xs";
 
 export function PaymentModal({
   clients,
@@ -88,10 +88,10 @@ export function PaymentModal({
             setError(null);
             setIsOpen(true);
           }}
-          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition-all cursor-pointer"
           title="Edit Payment"
         >
-          <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <Pencil className="h-3.5 w-3.5" />
         </button>
       );
     }
@@ -102,30 +102,35 @@ export function PaymentModal({
           setError(null);
           setIsOpen(true);
         }}
-        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-gold px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 text-xs font-bold shadow-xs transition-all cursor-pointer"
       >
-        <CreditCard className="h-4 w-4" strokeWidth={2.5} />
-        Log Client Payment
+        <CreditCard className="h-3.5 w-3.5" />
+        <span>+ Record Payment</span>
       </button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border border-slate-200 p-6 text-left shadow-xl transition-all">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <h3 className="text-base font-bold text-slate-900">
               {isEdit ? "Edit Client Payment" : "Record Client Payment"}
             </h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer"
           >
-            <X className="h-4 w-4" strokeWidth={2.5} />
+            <X className="h-4 w-4" />
           </button>
+        </div>
+
+        {/* Guidance Note */}
+        <div className="mt-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-[11px] text-emerald-900">
+          <strong>Dual-Balance Impact:</strong> This payment directly reduces <em>Client Pending</em> and adds to <em>Available Unspent Balance</em>.
         </div>
 
         {error && (

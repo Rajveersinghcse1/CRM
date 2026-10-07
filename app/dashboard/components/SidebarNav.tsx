@@ -33,11 +33,12 @@ type Props = {
 export function SidebarNav({ role }: Props) {
   const pathname = usePathname();
 
-  const isAdmin = role === "admin";
-  const isManager = role === "manager";
-  const isSales = role === "sales";
-  const isEmployee = role === "employee";
-  const isViewer = role === "viewer";
+  const effectiveRole = role || "admin";
+  const isAdmin = effectiveRole === "admin";
+  const isManager = effectiveRole === "manager";
+  const isSales = effectiveRole === "sales";
+  const isEmployee = effectiveRole === "employee";
+  const isViewer = effectiveRole === "viewer";
 
   // Permissions per process stage
   const canAccessSales = isAdmin || isManager || isSales || isViewer;
@@ -280,10 +281,10 @@ export function SidebarNav({ role }: Props) {
     <nav className="space-y-4 pb-8">
       {sections.map((section) => (
         <div key={section.title} className="space-y-1">
-          <p className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             {section.title}
           </p>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {section.items.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -295,16 +296,18 @@ export function SidebarNav({ role }: Props) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs font-bold rounded-xl border-2 transition-all ${
+                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
                     isActive
-                      ? "bg-violet-50 text-[#1E293B] border-[#1E293B] shadow-pop-sm"
-                      : "text-slate-600 border-transparent hover:border-[#1E293B] hover:bg-slate-50 hover:text-[#1E293B]"
+                      ? "bg-indigo-50 text-indigo-700 font-bold shadow-xs"
+                      : "text-slate-600 font-medium hover:bg-slate-100/70 hover:text-slate-900"
                   }`}
                 >
                   <div
-                    className={`flex items-center justify-center h-6 w-6 rounded-lg border border-[#1E293B] shrink-0 ${item.iconColor}`}
+                    className={`flex items-center justify-center h-6 w-6 rounded-md shrink-0 ${
+                      isActive ? "bg-indigo-600 text-white shadow-xs" : item.iconColor
+                    }`}
                   >
-                    <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
                   <span className="truncate">{item.label}</span>
                 </Link>

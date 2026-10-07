@@ -28,7 +28,17 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId || null;
+  } catch (err: unknown) {
+    const error = err as { digest?: string };
+    if (error?.digest === "DYNAMIC_SERVER_USAGE") {
+      throw err;
+    }
+    console.warn("HomePage auth check fallback:", err);
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFDF5] text-[#1E293B] font-sans selection:bg-amber-300 selection:text-[#1E293B]">
