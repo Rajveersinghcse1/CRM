@@ -7,7 +7,7 @@ import { createProjectAction, updateProjectAction, deleteProjectAction } from "@
 import { ConfirmModal } from "@/app/dashboard/components/confirm-modal";
 import type { Client, Project } from "@/types/crm";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all";
 
 export function ProjectModal({
   clients,
@@ -97,18 +97,18 @@ export function ProjectModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-[#8B5CF6] border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">{isEdit ? "Edit Project" : "Create New Project"}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border border-slate-200/90 p-6 text-left shadow-2xl transition-all">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+          <div className="flex items-center gap-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-indigo-600 ring-4 ring-indigo-50" />
+            <h3 className="text-base font-bold text-slate-900">{isEdit ? "Edit Project" : "Create New Project"}</h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all cursor-pointer"
           >
-            <X className="h-4 w-4" strokeWidth={2.5} />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -149,32 +149,35 @@ export function ProjectModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">
-                Contract Value (?) *
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Contract Value (₹) *
               </label>
               <input
                 type="number"
                 name="project_value"
                 required
+                min="0"
+                step="any"
                 defaultValue={initialData?.project_value}
-                placeholder="500000"
+                placeholder="60000"
                 className={INPUT}
               />
-              <span className="text-[10px] font-semibold text-slate-500">Amount client agreed to pay</span>
+              <span className="text-[10px] font-medium text-slate-500">Total amount client agreed to pay</span>
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">
-                Overall Cost Budget (?) *
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Cost Budget (₹) <span className="text-[10px] text-slate-400 font-normal lowercase">(optional)</span>
               </label>
               <input
                 type="number"
                 name="overall_budget"
-                required
-                defaultValue={initialData?.overall_budget}
-                placeholder="400000"
+                min="0"
+                step="any"
+                defaultValue={initialData?.overall_budget || ""}
+                placeholder="e.g. 25000"
                 className={INPUT}
               />
-              <span className="text-[10px] font-semibold text-slate-500">Internal delivery cost cap</span>
+              <span className="text-[10px] font-medium text-slate-500">Optional internal spending cap</span>
             </div>
           </div>
 
@@ -240,18 +243,18 @@ export function ProjectModal({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
             >
               {loading ? "Saving..." : isEdit ? "Update Project" : "Save Project & Open Workspace"}
             </button>
