@@ -20,7 +20,7 @@ const isAdminRoute = createRouteMatcher([
 const publishableKey =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
   process.env.CLERK_PUBLISHABLE_KEY ||
-  "pk_test_dXNhYmxlLWFudGVsb3BlLTU5OC5jbGVyay5hY2NvdW50cy5kZXYk";
+  "pk_test_c2V0dGxpbmcta2l0LTIxNzMuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 export const proxy = clerkMiddleware(
   async (auth, request) => {
