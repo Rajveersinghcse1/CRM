@@ -41,46 +41,49 @@ export function ConfirmModal({
   const resolvedVariant = isDanger ? "danger" : (variant || "danger");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/50 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-sm rounded-2xl bg-white border-2 border-[#1E293B] p-6 shadow-pop-lg text-left animate-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
-          <div className="flex items-center gap-2">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-6 shadow-2xl text-left animate-in zoom-in-95 duration-150 overflow-hidden">
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
             <div
-              className={`p-1.5 rounded-xl border border-[#1E293B] ${
+              className={`p-2 rounded-xl flex-shrink-0 ${
                 resolvedVariant === "danger"
-                  ? "bg-rose-100 text-rose-700"
-                  : "bg-amber-100 text-amber-800"
+                  ? "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60"
+                  : "bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60"
               }`}
             >
-              <AlertTriangle className="h-4 w-4" strokeWidth={2.5} />
+              <AlertTriangle className="h-5 w-5" />
             </div>
-            <h3 className="text-sm font-black text-[#1E293B]">{title}</h3>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Action confirmation</p>
+            </div>
           </div>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] hover:bg-slate-100 cursor-pointer disabled:opacity-50"
+            className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
           >
-            <X className="h-4 w-4" strokeWidth={2.5} />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {resolvedError && (
-          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+          <div className="mt-3 p-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 text-xs font-semibold text-rose-700 dark:text-rose-400 break-words">
             {resolvedError}
           </div>
         )}
 
-        <p className="mt-4 text-xs font-medium text-slate-600 leading-relaxed">
+        <div className="mt-4 text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed break-words">
           {message}
-        </p>
+        </div>
 
-        <div className="mt-6 flex items-center justify-end gap-2">
+        <div className="mt-6 flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={handleClose}
             disabled={loading}
-            className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer disabled:opacity-50"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer disabled:opacity-50"
           >
             {cancelText}
           </button>
@@ -88,10 +91,10 @@ export function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`rounded-xl border-2 border-[#1E293B] px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer disabled:opacity-50 ${
+            className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-xs transition-all cursor-pointer disabled:opacity-50 ${
               resolvedVariant === "danger"
-                ? "bg-rose-600 text-white"
-                : "btn-primary"
+                ? "bg-rose-600 hover:bg-rose-700 active:bg-rose-800"
+                : "bg-amber-600 hover:bg-amber-700 active:bg-amber-800"
             }`}
           >
             {loading ? "Processing..." : resolvedConfirmText}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { WexLogicLogo } from "@/components/wexlogic-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Menu,
   X,
@@ -172,34 +173,37 @@ export function MobileNav({ email, role }: { email?: string; role: string | null
   return (
     <>
       {/* Top Mobile Bar */}
-      <div className="md:hidden flex items-center justify-between p-3 border-b-2 border-[#1E293B] bg-white sticky top-0 z-40 shadow-pop-sm">
+      <div className="md:hidden flex items-center justify-between p-3 border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-40 shadow-xs">
         <WexLogicLogo href="/dashboard" size="sm" />
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 border-2 border-[#1E293B] rounded-xl bg-[#FFFDF5] shadow-pop-sm text-[#1E293B] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" strokeWidth={2.5} />
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {/* Drawer Overlay */}
       {isOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-[#1E293B]/40 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
             onClick={() => setIsOpen(false)}
           />
-          <div className="relative flex w-full max-w-[300px] flex-col bg-white border-r-2 border-[#1E293B] h-full shadow-pop-xl z-10">
+          <div className="relative flex w-full max-w-[300px] flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-full shadow-2xl z-10">
             {/* Drawer Header */}
-            <div className="flex h-16 items-center justify-between p-4 border-b-2 border-[#1E293B] bg-[#FFFDF5] shrink-0">
+            <div className="flex h-16 items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
               <WexLogicLogo href="/dashboard" size="sm" />
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg border-2 border-[#1E293B] bg-white shadow-pop-sm text-[#1E293B]"
+                className="p-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                 aria-label="Close menu"
               >
-                <X className="h-4 w-4" strokeWidth={2.5} />
+                <X className="h-4 w-4" />
               </button>
             </div>
 

@@ -86,10 +86,10 @@ export default async function BudgetsPage() {
                   className="rounded-xl border-2 border-[#1E293B] bg-white p-3.5 shadow-pop-sm flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-xs text-[#1E293B]">{alt.categoryName}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-black text-xs text-[#1E293B] truncate min-w-0 flex-1">{alt.categoryName}</span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase border ${badge.bg} ${badge.text} ${badge.border}`}
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase border ${badge.bg} ${badge.text} ${badge.border}`}
                       >
                         {badge.label}
                       </span>

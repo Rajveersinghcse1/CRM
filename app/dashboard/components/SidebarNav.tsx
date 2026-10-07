@@ -298,8 +298,8 @@ export function SidebarNav({ role }: Props) {
                   href={item.href}
                   className={`flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
                     isActive
-                      ? "bg-indigo-50 text-indigo-700 font-bold shadow-xs"
-                      : "text-slate-600 font-medium hover:bg-slate-100/70 hover:text-slate-900"
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100/70 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-slate-100"
                   }`}
                 >
                   <div

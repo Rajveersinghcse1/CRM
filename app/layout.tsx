@@ -42,9 +42,29 @@ export default function RootLayout({
     >
       <html
         lang="en"
+        suppressHydrationWarning
         className={`${outfit.variable} ${plusJakartaSans.variable} h-full antialiased font-sans`}
       >
-        <body className="min-h-full flex flex-col bg-[#FFFDF5] text-[#1E293B] selection:bg-[#FBBF24] selection:text-[#1E293B]">
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var stored = localStorage.getItem('theme');
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (stored === 'dark' || (!stored && prefersDark)) {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
+        </head>
+        <body className="min-h-full flex flex-col bg-[#F8FAFC] dark:bg-[#0B0F19] text-[#0F172A] dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-150">
           {children}
         </body>
       </html>

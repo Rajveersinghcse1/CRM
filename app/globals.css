@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-heading: var(--font-outfit), system-ui, sans-serif;
   --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
@@ -18,6 +20,13 @@
   :root {
     --background: #F8FAFC;
     --foreground: #0F172A;
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: #0B0F19;
+    --foreground: #F8FAFC;
+    color-scheme: dark;
   }
 
   body {
@@ -25,6 +34,11 @@
     color: #0F172A;
     font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  .dark body {
+    background-color: #0B0F19;
+    color: #F8FAFC;
   }
 
   h1, h2, h3, h4, h5, h6 {

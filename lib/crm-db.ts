@@ -197,8 +197,36 @@ async function getStore(): Promise<CrmStore> {
   }
 }
 
+// ==============================================================================
+// HIGH-SPEED IN-MEMORY QUERY CACHE (Solves remote latency on page navigations)
+// ==============================================================================
+const _queryCache = new Map<string, { data: any; expiresAt: number }>();
+const QUERY_CACHE_TTL = 15_000; // 15 seconds TTL
+
+export function invalidateQueryCache(prefix?: string) {
+  if (!prefix) {
+    _queryCache.clear();
+  } else {
+    for (const k of _queryCache.keys()) {
+      if (k.startsWith(prefix)) _queryCache.delete(k);
+    }
+  }
+}
+
+async function withQueryCache<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const cached = _queryCache.get(key);
+  if (cached && cached.expiresAt > now) {
+    return cached.data as T;
+  }
+  const data = await fetcher();
+  _queryCache.set(key, { data, expiresAt: now + QUERY_CACHE_TTL });
+  return data;
+}
+
 async function saveStore(store: CrmStore): Promise<void> {
   _memStore = store;
+  invalidateQueryCache();
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf-8");
@@ -213,15 +241,17 @@ async function saveStore(store: CrmStore): Promise<void> {
 
 // --- COMPANIES ---
 export const getCompanies = cache(async (): Promise<Company[]> => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.from("companies").select("*").order("name");
-    if (!error && data) return data as Company[];
-  } catch (err) {
-    console.warn("Supabase getCompanies fallback:", err);
-  }
-  const store = await getStore();
-  return store.companies;
+  return withQueryCache("companies", async () => {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from("companies").select("*").order("name");
+      if (!error && data) return data as Company[];
+    } catch (err) {
+      console.warn("Supabase getCompanies fallback:", err);
+    }
+    const store = await getStore();
+    return store.companies;
+  });
 });
 
 export async function createCompany(data: Omit<Company, "id" | "created_at" | "updated_at">): Promise<Company> {
@@ -285,18 +315,20 @@ export async function deleteCompany(id: string): Promise<boolean> {
 
 // --- CLIENTS ---
 export const getClients = cache(async (): Promise<Client[]> => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from("clients")
-      .select("*, company:companies(*)")
-      .order("created_at", { ascending: false });
-    if (!error && data) return data as Client[];
-  } catch (err) {
-    console.warn("Supabase getClients fallback:", err);
-  }
-  const store = await getStore();
-  return store.clients;
+  return withQueryCache("clients", async () => {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*, company:companies(*)")
+        .order("created_at", { ascending: false });
+      if (!error && data) return data as Client[];
+    } catch (err) {
+      console.warn("Supabase getClients fallback:", err);
+    }
+    const store = await getStore();
+    return store.clients;
+  });
 });
 
 export const getClientById = cache(async (id: string): Promise<Client | null> => {
@@ -419,18 +451,20 @@ export async function deleteClient(id: string): Promise<boolean> {
 
 // --- LEADS & CONVERSION ---
 export const getLeads = cache(async (): Promise<Lead[]> => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) return data as Lead[];
-  } catch (err) {
-    console.warn("Supabase getLeads fallback:", err);
-  }
-  const store = await getStore();
-  return store.leads;
+  return withQueryCache("leads", async () => {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) return data as Lead[];
+    } catch (err) {
+      console.warn("Supabase getLeads fallback:", err);
+    }
+    const store = await getStore();
+    return store.leads;
+  });
 });
 
 export const getLeadById = cache(async (id: string): Promise<Lead | null> => {
@@ -624,24 +658,26 @@ export async function convertLeadToClient(
 
 // --- DEALS ---
 export const getDeals = cache(async (): Promise<Deal[]> => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from("deals")
-      .select("*, client:clients(*), service:services(*), company:companies(*)")
-      .order("created_at", { ascending: false });
-    if (!error && data) return data as Deal[];
-  } catch (err) {
-    console.warn("Supabase getDeals fallback:", err);
-  }
-  const store = await getStore();
-  const clients = await getClients();
-  const services = await getServices();
-  return store.deals.map((d) => ({
-    ...d,
-    client: clients.find((c) => c.id === d.client_id) || null,
-    service: services.find((s) => s.id === d.service_id) || null,
-  }));
+  return withQueryCache("deals", async () => {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("deals")
+        .select("*, client:clients(*), service:services(*), company:companies(*)")
+        .order("created_at", { ascending: false });
+      if (!error && data) return data as Deal[];
+    } catch (err) {
+      console.warn("Supabase getDeals fallback:", err);
+    }
+    const store = await getStore();
+    const clients = await getClients();
+    const services = await getServices();
+    return store.deals.map((d) => ({
+      ...d,
+      client: clients.find((c) => c.id === d.client_id) || null,
+      service: services.find((s) => s.id === d.service_id) || null,
+    }));
+  });
 });
 
 export async function createDeal(data: Partial<Deal>): Promise<Deal> {
@@ -756,64 +792,66 @@ export const getServices = cache(async (): Promise<Service[]> => {
 
 // --- PROJECTS & CATEGORIES ---
 export const getProjects = cache(async (): Promise<Project[]> => {
-  let rawProjects: Project[] = [];
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from("projects")
-      .select("*, client:clients(*), company:companies(*)")
-      .order("created_at", { ascending: false });
-    if (!error && data) rawProjects = data as Project[];
-  } catch (err) {
-    console.warn("Supabase getProjects fallback:", err);
-  }
+  return withQueryCache("projects", async () => {
+    let rawProjects: Project[] = [];
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*, client:clients(*), company:companies(*)")
+        .order("created_at", { ascending: false });
+      if (!error && data) rawProjects = data as Project[];
+    } catch (err) {
+      console.warn("Supabase getProjects fallback:", err);
+    }
 
-  if (rawProjects.length === 0) {
-    const store = await getStore();
-    const clients = await getClients();
-    rawProjects = store.projects.map((p) => ({
-      ...p,
-      client: clients.find((c) => c.id === p.client_id) || null,
-    }));
-  }
+    if (rawProjects.length === 0) {
+      const store = await getStore();
+      const clients = await getClients();
+      rawProjects = store.projects.map((p) => ({
+        ...p,
+        client: clients.find((c) => c.id === p.client_id) || null,
+      }));
+    }
 
-  const [expenses, payments] = await Promise.all([
-    getExpenses(),
-    getClientPayments(),
-  ]);
+    const [expenses, payments] = await Promise.all([
+      getExpenses(),
+      getClientPayments(),
+    ]);
 
-  return rawProjects.map((proj) => {
-    const projectExpenses = expenses.filter((e) => e.project_id === proj.id);
-    const totalActualCost = projectExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    return rawProjects.map((proj) => {
+      const projectExpenses = expenses.filter((e) => e.project_id === proj.id);
+      const totalActualCost = projectExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const projectPayments = payments.filter(
-      (p) => p.project_id === proj.id && p.status === "completed"
-    );
-    const totalCollected = projectPayments.reduce((sum, p) => sum + Number(p.amount), 0);
-    const clientPending = Math.max(0, proj.project_value - totalCollected);
-    const totalOutstanding = clientPending;
-    const availableBalance = totalCollected - totalActualCost;
-    const budgetLeft = availableBalance;
-    const expectedProfit = proj.project_value - totalActualCost;
-    const expectedMargin = proj.project_value > 0 ? Math.round(((proj.project_value - totalActualCost) / proj.project_value) * 100) : 0;
-    const grossProfit = expectedProfit;
-    const grossMargin = expectedMargin;
-    const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
+      const projectPayments = payments.filter(
+        (p) => p.project_id === proj.id && p.status === "completed"
+      );
+      const totalCollected = projectPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+      const clientPending = Math.max(0, proj.project_value - totalCollected);
+      const totalOutstanding = clientPending;
+      const availableBalance = totalCollected - totalActualCost;
+      const budgetLeft = availableBalance;
+      const expectedProfit = proj.project_value - totalActualCost;
+      const expectedMargin = proj.project_value > 0 ? Math.round(((proj.project_value - totalActualCost) / proj.project_value) * 100) : 0;
+      const grossProfit = expectedProfit;
+      const grossMargin = expectedMargin;
+      const remainingBudget = Math.max(0, proj.overall_budget - totalActualCost);
 
-    return {
-      ...proj,
-      totalActualCost,
-      totalCollected,
-      totalOutstanding,
-      clientPending,
-      availableBalance,
-      expectedProfit,
-      expectedMargin,
-      grossProfit,
-      grossMargin,
-      remainingBudget,
-      budgetLeft,
-    };
+      return {
+        ...proj,
+        totalActualCost,
+        totalCollected,
+        totalOutstanding,
+        clientPending,
+        availableBalance,
+        expectedProfit,
+        expectedMargin,
+        grossProfit,
+        grossMargin,
+        remainingBudget,
+        budgetLeft,
+      };
+    });
   });
 });
 
@@ -1142,29 +1180,31 @@ export async function deleteProjectCategory(id: string): Promise<boolean> {
 
 // --- EXPENSES ---
 export const getExpenses = cache(async (projectId?: string): Promise<Expense[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("expenses")
-      .select("*, project:projects(name), category:project_categories(name), vendor:vendors(name), client:clients(name, company_name)")
-      .order("expense_date", { ascending: false });
+  return withQueryCache("expenses:" + (projectId || "all"), async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase
+        .from("expenses")
+        .select("*, project:projects(name), category:project_categories(name), vendor:vendors(name), client:clients(name, company_name)")
+        .order("expense_date", { ascending: false });
 
-    if (projectId) query = query.eq("project_id", projectId);
-    const { data, error } = await query;
-    if (!error && data) return data as Expense[];
-  } catch (err) {
-    console.warn("Supabase getExpenses fallback:", err);
-  }
+      if (projectId) query = query.eq("project_id", projectId);
+      const { data, error } = await query;
+      if (!error && data) return data as Expense[];
+    } catch (err) {
+      console.warn("Supabase getExpenses fallback:", err);
+    }
 
-  const store = await getStore();
-  let list = store.expenses;
-  if (projectId) list = list.filter((e) => e.project_id === projectId);
-  return list.map((e) => ({
-    ...e,
-    project: store.projects.find((p) => p.id === e.project_id) || null,
-    category: store.project_categories.find((c) => c.id === e.category_id) || null,
-    vendor: store.vendors.find((v) => v.id === e.vendor_id) || null,
-  }));
+    const store = await getStore();
+    let list = store.expenses;
+    if (projectId) list = list.filter((e) => e.project_id === projectId);
+    return list.map((e) => ({
+      ...e,
+      project: store.projects.find((p) => p.id === e.project_id) || null,
+      category: store.project_categories.find((c) => c.id === e.category_id) || null,
+      vendor: store.vendors.find((v) => v.id === e.vendor_id) || null,
+    }));
+  });
 });
 
 export async function createExpense(data: Partial<Expense>): Promise<Expense> {
@@ -1259,34 +1299,36 @@ export async function deleteExpense(id: string): Promise<boolean> {
 
 
 export const getVendors = cache(async (): Promise<Vendor[]> => {
-  let vendors: Vendor[] = [];
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.from("vendors").select("*").order("name");
-    if (!error && data) vendors = data as Vendor[];
-  } catch (err) {
-    console.warn("Supabase getVendors fallback:", err);
-  }
+  return withQueryCache("vendors", async () => {
+    let vendors: Vendor[] = [];
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from("vendors").select("*").order("name");
+      if (!error && data) vendors = data as Vendor[];
+    } catch (err) {
+      console.warn("Supabase getVendors fallback:", err);
+    }
 
-  if (vendors.length === 0) {
-    const store = await getStore();
-    vendors = store.vendors;
-  }
+    if (vendors.length === 0) {
+      const store = await getStore();
+      vendors = store.vendors;
+    }
 
-  const bills = await getVendorBills();
-  return vendors.map((v) => {
-    const vendorBills = bills.filter((b) => b.vendor_id === v.id);
-    const total_bills = vendorBills.reduce((sum, b) => sum + Number(b.total_amount), 0);
-    const total_paid = vendorBills
-      .filter((b) => b.payment_status === "paid")
-      .reduce((sum, b) => sum + Number(b.total_amount), 0);
-    const total_pending = total_bills - total_paid;
-    return {
-      ...v,
-      total_bills,
-      total_paid,
-      total_pending,
-    };
+    const bills = await getVendorBills();
+    return vendors.map((v) => {
+      const vendorBills = bills.filter((b) => b.vendor_id === v.id);
+      const total_bills = vendorBills.reduce((sum, b) => sum + Number(b.total_amount), 0);
+      const total_paid = vendorBills
+        .filter((b) => b.payment_status === "paid")
+        .reduce((sum, b) => sum + Number(b.total_amount), 0);
+      const total_pending = total_bills - total_paid;
+      return {
+        ...v,
+        total_bills,
+        total_paid,
+        total_pending,
+      };
+    });
   });
 });
 
@@ -1352,31 +1394,34 @@ export async function deleteVendor(id: string): Promise<boolean> {
 }
 
 export const getVendorBills = cache(async (vendorId?: string, projectId?: string): Promise<VendorBill[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("vendor_bills")
-      .select("*, vendor:vendors(name), project:projects(name), category:project_categories(name)")
-      .order("bill_date", { ascending: false });
+  const cacheKey = `vendor_bills_${vendorId || "all"}_${projectId || "all"}`;
+  return withQueryCache(cacheKey, async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase
+        .from("vendor_bills")
+        .select("*, vendor:vendors(name), project:projects(name), category:project_categories(name)")
+        .order("bill_date", { ascending: false });
 
-    if (vendorId) query = query.eq("vendor_id", vendorId);
-    if (projectId) query = query.eq("project_id", projectId);
+      if (vendorId) query = query.eq("vendor_id", vendorId);
+      if (projectId) query = query.eq("project_id", projectId);
 
-    const { data, error } = await query;
-    if (!error && data) return data as VendorBill[];
-  } catch (err) {
-    console.warn("Supabase getVendorBills fallback:", err);
-  }
+      const { data, error } = await query;
+      if (!error && data) return data as VendorBill[];
+    } catch (err) {
+      console.warn("Supabase getVendorBills fallback:", err);
+    }
 
-  const store = await getStore();
-  let bills = store.vendor_bills;
-  if (vendorId) bills = bills.filter((b) => b.vendor_id === vendorId);
-  if (projectId) bills = bills.filter((b) => b.project_id === projectId);
-  return bills.map((b) => ({
-    ...b,
-    vendor: store.vendors.find((v) => v.id === b.vendor_id) || null,
-    project: store.projects.find((p) => p.id === b.project_id) || null,
-  }));
+    const store = await getStore();
+    let bills = store.vendor_bills;
+    if (vendorId) bills = bills.filter((b) => b.vendor_id === vendorId);
+    if (projectId) bills = bills.filter((b) => b.project_id === projectId);
+    return bills.map((b) => ({
+      ...b,
+      vendor: store.vendors.find((v) => v.id === b.vendor_id) || null,
+      project: store.projects.find((p) => p.id === b.project_id) || null,
+    }));
+  });
 });
 
 export async function createVendorBill(data: Partial<VendorBill>): Promise<VendorBill> {
@@ -1467,32 +1512,35 @@ export async function deleteVendorBill(id: string): Promise<boolean> {
 
 
 export const getInvoices = cache(async (clientId?: string, projectId?: string): Promise<Invoice[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("invoices")
-      .select("*, client:clients(*), project:projects(name), items:invoice_items(*)")
-      .order("issue_date", { ascending: false });
+  const cacheKey = `invoices_${clientId || "all"}_${projectId || "all"}`;
+  return withQueryCache(cacheKey, async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase
+        .from("invoices")
+        .select("*, client:clients(*), project:projects(name), items:invoice_items(*)")
+        .order("issue_date", { ascending: false });
 
-    if (clientId) query = query.eq("client_id", clientId);
-    if (projectId) query = query.eq("project_id", projectId);
+      if (clientId) query = query.eq("client_id", clientId);
+      if (projectId) query = query.eq("project_id", projectId);
 
-    const { data, error } = await query;
-    if (!error && data) return data as Invoice[];
-  } catch (err) {
-    console.warn("Supabase getInvoices fallback:", err);
-  }
+      const { data, error } = await query;
+      if (!error && data) return data as Invoice[];
+    } catch (err) {
+      console.warn("Supabase getInvoices fallback:", err);
+    }
 
-  const store = await getStore();
-  let list = store.invoices;
-  if (clientId) list = list.filter((i) => i.client_id === clientId);
-  if (projectId) list = list.filter((i) => i.project_id === projectId);
-  return list.map((inv) => ({
-    ...inv,
-    client: store.clients.find((c) => c.id === inv.client_id) || null,
-    project: store.projects.find((p) => p.id === inv.project_id) || null,
-    items: store.invoice_items.filter((item) => item.invoice_id === inv.id),
-  }));
+    const store = await getStore();
+    let list = store.invoices;
+    if (clientId) list = list.filter((i) => i.client_id === clientId);
+    if (projectId) list = list.filter((i) => i.project_id === projectId);
+    return list.map((inv) => ({
+      ...inv,
+      client: store.clients.find((c) => c.id === inv.client_id) || null,
+      project: store.projects.find((p) => p.id === inv.project_id) || null,
+      items: store.invoice_items.filter((item) => item.invoice_id === inv.id),
+    }));
+  });
 });
 
 export const getInvoiceById = cache(async (id: string): Promise<Invoice | null> => {
@@ -1641,32 +1689,34 @@ export const getClientPayments = cache(async (
   clientId?: string,
   projectId?: string
 ): Promise<ClientPayment[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("client_payments")
-      .select("*, client:clients(name, company_name), project:projects(name), invoice:invoices(invoice_number)")
-      .order("payment_date", { ascending: false });
+  return withQueryCache(`payments:${clientId || "all"}:${projectId || "all"}`, async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase
+        .from("client_payments")
+        .select("*, client:clients(name, company_name), project:projects(name), invoice:invoices(invoice_number)")
+        .order("payment_date", { ascending: false });
 
-    if (clientId) query = query.eq("client_id", clientId);
-    if (projectId) query = query.eq("project_id", projectId);
+      if (clientId) query = query.eq("client_id", clientId);
+      if (projectId) query = query.eq("project_id", projectId);
 
-    const { data, error } = await query;
-    if (!error && data) return data as ClientPayment[];
-  } catch (err) {
-    console.warn("Supabase getClientPayments fallback:", err);
-  }
+      const { data, error } = await query;
+      if (!error && data) return data as ClientPayment[];
+    } catch (err) {
+      console.warn("Supabase getClientPayments fallback:", err);
+    }
 
-  const store = await getStore();
-  let list = store.client_payments;
-  if (clientId) list = list.filter((p) => p.client_id === clientId);
-  if (projectId) list = list.filter((p) => p.project_id === projectId);
-  return list.map((p) => ({
-    ...p,
-    client: store.clients.find((c) => c.id === p.client_id) || null,
-    project: store.projects.find((proj) => proj.id === p.project_id) || null,
-    invoice: store.invoices.find((inv) => inv.id === p.invoice_id) || null,
-  }));
+    const store = await getStore();
+    let list = store.client_payments;
+    if (clientId) list = list.filter((p) => p.client_id === clientId);
+    if (projectId) list = list.filter((p) => p.project_id === projectId);
+    return list.map((p) => ({
+      ...p,
+      client: store.clients.find((c) => c.id === p.client_id) || null,
+      project: store.projects.find((proj) => proj.id === p.project_id) || null,
+      invoice: store.invoices.find((inv) => inv.id === p.invoice_id) || null,
+    }));
+  });
 });
 
 export async function createClientPayment(data: Partial<ClientPayment>): Promise<ClientPayment> {
@@ -1887,28 +1937,31 @@ export async function deleteClientPayment(id: string): Promise<boolean> {
 
 // --- TASKS ---
 export const getTasks = cache(async (projectId?: string): Promise<Task[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase
-      .from("tasks")
-      .select("*, project:projects(name), category:project_categories(name)")
-      .order("created_at", { ascending: false });
+  const cacheKey = `tasks_${projectId || "all"}`;
+  return withQueryCache(cacheKey, async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase
+        .from("tasks")
+        .select("*, project:projects(name), category:project_categories(name)")
+        .order("created_at", { ascending: false });
 
-    if (projectId) query = query.eq("project_id", projectId);
-    const { data, error } = await query;
-    if (!error && data) return data as Task[];
-  } catch (err) {
-    console.warn("Supabase getTasks fallback:", err);
-  }
+      if (projectId) query = query.eq("project_id", projectId);
+      const { data, error } = await query;
+      if (!error && data) return data as Task[];
+    } catch (err) {
+      console.warn("Supabase getTasks fallback:", err);
+    }
 
-  const store = await getStore();
-  let list = store.tasks || [];
-  if (projectId) list = list.filter((t) => t.project_id === projectId);
-  return list.map((t) => ({
-    ...t,
-    project: (store.projects || []).find((p) => p.id === t.project_id) || null,
-    category: (store.project_categories || []).find((c) => c.id === t.category_id) || null,
-  }));
+    const store = await getStore();
+    let list = store.tasks || [];
+    if (projectId) list = list.filter((t) => t.project_id === projectId);
+    return list.map((t) => ({
+      ...t,
+      project: (store.projects || []).find((p) => p.id === t.project_id) || null,
+      category: (store.project_categories || []).find((c) => c.id === t.category_id) || null,
+    }));
+  });
 });
 
 export async function createTask(data: Partial<Task>): Promise<Task> {
@@ -2008,30 +2061,33 @@ export const getActivities = cache(async (filter?: {
   projectId?: string;
   leadId?: string;
 }): Promise<Activity[]> => {
-  try {
-    const supabase = getSupabase();
-    let query = supabase.from("activities").select("*").order("activity_date", { ascending: false });
-    if (filter?.clientId) query = query.eq("client_id", filter.clientId);
-    if (filter?.projectId) query = query.eq("project_id", filter.projectId);
-    if (filter?.leadId) query = query.eq("lead_id", filter.leadId);
+  const cacheKey = `activities_${filter?.clientId || "all"}_${filter?.projectId || "all"}_${filter?.leadId || "all"}`;
+  return withQueryCache(cacheKey, async () => {
+    try {
+      const supabase = getSupabase();
+      let query = supabase.from("activities").select("*").order("activity_date", { ascending: false });
+      if (filter?.clientId) query = query.eq("client_id", filter.clientId);
+      if (filter?.projectId) query = query.eq("project_id", filter.projectId);
+      if (filter?.leadId) query = query.eq("lead_id", filter.leadId);
 
-    const { data, error } = await query;
-    if (!error && data) return data as Activity[];
-  } catch (err) {
-    console.warn("Supabase getActivities fallback:", err);
-  }
+      const { data, error } = await query;
+      if (!error && data) return data as Activity[];
+    } catch (err) {
+      console.warn("Supabase getActivities fallback:", err);
+    }
 
-  const store = await getStore();
-  let list = store.activities;
-  if (filter?.clientId) list = list.filter((a) => a.client_id === filter.clientId);
-  if (filter?.projectId) list = list.filter((a) => a.project_id === filter.projectId);
-  if (filter?.leadId) list = list.filter((a) => a.lead_id === filter.leadId);
-  return list.map((a) => ({
-    ...a,
-    client: store.clients.find((c) => c.id === a.client_id) || null,
-    lead: store.leads.find((l) => l.id === a.lead_id) || null,
-    project: store.projects.find((p) => p.id === a.project_id) || null,
-  }));
+    const store = await getStore();
+    let list = store.activities;
+    if (filter?.clientId) list = list.filter((a) => a.client_id === filter.clientId);
+    if (filter?.projectId) list = list.filter((a) => a.project_id === filter.projectId);
+    if (filter?.leadId) list = list.filter((a) => a.lead_id === filter.leadId);
+    return list.map((a) => ({
+      ...a,
+      client: store.clients.find((c) => c.id === a.client_id) || null,
+      lead: store.leads.find((l) => l.id === a.lead_id) || null,
+      project: store.projects.find((p) => p.id === a.project_id) || null,
+    }));
+  });
 });
 
 export async function createActivity(data: Partial<Activity>): Promise<Activity> {
@@ -2354,70 +2410,90 @@ export interface ExecutiveDashboardData {
 }
 
 export const getExecutiveDashboardData = cache(async (): Promise<ExecutiveDashboardData> => {
-  const [projects, leads, clients, payments, expenses, activities] = await Promise.all([
-    getProjects(),
-    getLeads(),
-    getClients(),
-    getClientPayments(),
-    getExpenses(),
-    getActivities(),
-  ]);
+  return withQueryCache("executive-dashboard", async () => {
+    const [projects, leads, clients, payments, expenses, activities] = await Promise.all([
+      getProjects(),
+      getLeads(),
+      getClients(),
+      getClientPayments(),
+      getExpenses(),
+      getActivities(),
+    ]);
 
-  const totalLeads = leads.length;
-  const activeClients = clients.filter((c) => c.status === "active").length;
-  const activeProjects = projects.filter((p) => p.status === "active").length;
+    const totalLeads = leads.length;
+    const activeClients = clients.filter((c) => c.status === "active").length;
+    const activeProjects = projects.filter((p) => p.status === "active").length;
 
-  const totalPipeline = projects.reduce((sum, p) => sum + p.project_value, 0);
-  const collectedRevenue = payments
-    .filter((p) => p.status === "completed")
-    .reduce((sum, p) => sum + Number(p.amount), 0);
-  const clientReceivables = Math.max(0, totalPipeline - collectedRevenue);
-  const clientPending = clientReceivables;
+    const totalPipeline = projects.reduce((sum, p) => sum + p.project_value, 0);
+    const collectedRevenue = payments
+      .filter((p) => p.status === "completed")
+      .reduce((sum, p) => sum + Number(p.amount), 0);
+    const clientReceivables = Math.max(0, totalPipeline - collectedRevenue);
+    const clientPending = clientReceivables;
 
-  const projectCosts = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-  const availableBalance = collectedRevenue - projectCosts;
-  const expectedProfit = totalPipeline - projectCosts;
-  const expectedMarginPct = totalPipeline > 0 ? Math.round(((totalPipeline - projectCosts) / totalPipeline) * 100) : 0;
-  const grossProfit = expectedProfit;
-  const grossMarginPct = expectedMarginPct;
+    const projectCosts = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const availableBalance = collectedRevenue - projectCosts;
+    const expectedProfit = totalPipeline - projectCosts;
+    const expectedMarginPct = totalPipeline > 0 ? Math.round(((totalPipeline - projectCosts) / totalPipeline) * 100) : 0;
+    const grossProfit = expectedProfit;
+    const grossMarginPct = expectedMarginPct;
 
-  // Budget Alerts (utilization >= 80%) — fetch all project categories concurrently in parallel
-  const budgetAlerts: ExecutiveDashboardData["budgetAlerts"] = [];
-  const projectCats = await Promise.all(
-    projects.map((proj) => getProjectCategories(proj.id))
-  );
-  projects.forEach((proj, idx) => {
-    const cats = projectCats[idx] || [];
-    for (const c of cats) {
-      if ((c.utilization_pct || 0) >= 80) {
-        budgetAlerts.push({
-          projectName: proj.name,
-          categoryName: c.name,
-          budget: c.budget,
-          actualCost: c.actual_cost || 0,
-          utilizationPct: c.utilization_pct || 0,
-          status: getBudgetHealth(c.actual_cost || 0, c.budget),
-        });
+    // Single consolidated query for budget alerts — eliminates N+1 waterfall
+    const budgetAlerts: ExecutiveDashboardData["budgetAlerts"] = [];
+    if (projects.length > 0) {
+      let allCategories: ProjectCategory[] = [];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from("project_categories")
+          .select("*")
+          .in("project_id", projects.map((p) => p.id));
+        if (!error && data) allCategories = data as ProjectCategory[];
+      } catch {
+        // Fallback
+      }
+      if (allCategories.length === 0) {
+        const store = await getStore();
+        const projIdSet = new Set(projects.map((p) => p.id));
+        allCategories = store.project_categories.filter((c) => projIdSet.has(c.project_id));
+      }
+
+      for (const c of allCategories) {
+        const proj = projects.find((p) => p.id === c.project_id);
+        if (!proj) continue;
+        const catExpenses = expenses.filter((e) => e.category_id === c.id);
+        const actualCost = catExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+        const utilizationPct = calcUtilizationPct(actualCost, c.budget);
+        if (utilizationPct >= 80) {
+          budgetAlerts.push({
+            projectName: proj.name,
+            categoryName: c.name,
+            budget: c.budget,
+            actualCost,
+            utilizationPct,
+            status: getBudgetHealth(actualCost, c.budget),
+          });
+        }
       }
     }
-  });
 
-  return {
-    totalLeads,
-    activeClients,
-    activeProjects,
-    totalPipeline,
-    clientReceivables,
-    clientPending,
-    collectedRevenue,
-    projectCosts,
-    availableBalance,
-    grossProfit,
-    grossMarginPct,
-    expectedProfit,
-    expectedMarginPct,
-    budgetAlerts,
-    recentPayments: payments.slice(0, 5),
-    todayActivities: activities.slice(0, 5),
-  };
+    return {
+      totalLeads,
+      activeClients,
+      activeProjects,
+      totalPipeline,
+      clientReceivables,
+      clientPending,
+      collectedRevenue,
+      projectCosts,
+      availableBalance,
+      grossProfit,
+      grossMarginPct,
+      expectedProfit,
+      expectedMarginPct,
+      budgetAlerts,
+      recentPayments: payments.slice(0, 5),
+      todayActivities: activities.slice(0, 5),
+    };
+  });
 });

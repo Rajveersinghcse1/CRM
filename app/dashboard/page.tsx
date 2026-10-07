@@ -233,26 +233,26 @@ export default async function DashboardPage() {
             {data.budgetAlerts.map((alert, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-white rounded-lg border border-rose-200 shadow-2xs space-y-1"
+                className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-rose-200 dark:border-rose-900/50 shadow-2xs space-y-1.5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 truncate max-w-[150px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate min-w-0 flex-1">
                     {alert.projectName}
                   </span>
                   <span
-                    className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                    className={`shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
                       alert.status === "over_budget"
-                        ? "bg-rose-100 text-rose-800"
-                        : "bg-amber-100 text-amber-800"
+                        ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                     }`}
                   >
                     {alert.utilizationPct}% Used
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">
-                  Category: <strong className="text-slate-700">{alert.categoryName}</strong>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  Category: <strong className="text-slate-700 dark:text-slate-200">{alert.categoryName}</strong>
                 </p>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
                   <span>Spent: {formatINR(alert.actualCost)}</span>
                   <span>Budget: {formatINR(alert.budget)}</span>
                 </div>
