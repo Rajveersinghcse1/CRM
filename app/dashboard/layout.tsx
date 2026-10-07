@@ -27,7 +27,7 @@ export default async function DashboardLayout({
   const activeBadge = roleBadges[role || "employee"] || roleBadges.employee;
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex-col md:flex-row overflow-hidden font-sans print:h-auto print:overflow-visible print:bg-white">
+    <div className="flex min-h-screen md:h-screen bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex-col md:flex-row md:overflow-hidden font-sans print:h-auto print:overflow-visible print:bg-white">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 relative flex-col shrink-0 shadow-sm z-10 print:hidden">
         {/* Brand Header */}
@@ -75,7 +75,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8FAFC] dark:bg-slate-950 print:overflow-visible print:h-auto print:bg-white">
+      <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden bg-[#F8FAFC] dark:bg-slate-950 print:overflow-visible print:h-auto print:bg-white">
         {/* Mobile Navigation Header */}
         <div className="print:hidden">
           <MobileNav email={displayName} role={role} />
@@ -83,7 +83,7 @@ export default async function DashboardLayout({
 
         {/* Main Scrollable View */}
         <main className="flex-1 overflow-y-auto print:overflow-visible print:h-auto">
-          <div className="p-4 md:p-8 max-w-7xl mx-auto print:p-0 print:m-0 print:max-w-none">
+          <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto print:p-0 print:m-0 print:max-w-none">
             {children}
           </div>
         </main>

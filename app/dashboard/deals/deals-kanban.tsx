@@ -40,7 +40,7 @@ export function DealsKanban({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6 overflow-x-auto">
+    <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-6 sm:overflow-visible">
       {STAGES.map((stage) => {
         const stageDeals = deals.filter((d) => d.stage === stage.id);
         const stageTotal = stageDeals.reduce((sum, d) => sum + d.estimated_value, 0);
@@ -48,7 +48,7 @@ export function DealsKanban({
         return (
           <div
             key={stage.id}
-            className={`rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 ${stage.bg} p-3 flex flex-col shadow-pop-sm min-w-[200px]`}
+            className={`rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 ${stage.bg} p-3 flex flex-col shadow-pop-sm min-w-[270px] sm:min-w-0 snap-start shrink-0 sm:shrink`}
           >
             {/* Stage Header */}
             <div className="flex items-center justify-between pb-2 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
