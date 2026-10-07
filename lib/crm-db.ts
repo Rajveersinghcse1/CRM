@@ -201,7 +201,7 @@ async function getStore(): Promise<CrmStore> {
 // HIGH-SPEED IN-MEMORY QUERY CACHE (Solves remote latency on page navigations)
 // ==============================================================================
 const _queryCache = new Map<string, { data: any; expiresAt: number }>();
-const QUERY_CACHE_TTL = 15_000; // 15 seconds TTL
+const QUERY_CACHE_TTL = 60_000; // 60 seconds TTL (invalidated instantly on any mutation)
 
 export function invalidateQueryCache(prefix?: string) {
   if (!prefix) {
