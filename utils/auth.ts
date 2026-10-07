@@ -53,9 +53,13 @@ export const getCurrentUserRole = cache(async (): Promise<CrmRole | null> => {
     return rawRole;
   }
 
-  // Primary administrator email fallback (only exact primary account)
+  // Primary administrator email fallback (only exact primary accounts)
   const userEmail = user.emailAddresses?.[0]?.emailAddress?.toLowerCase();
-  if (userEmail === "1.rajveersinghcse@gmail.com") {
+  const ADMIN_EMAILS = [
+    "namansingh4680@gmail.com",
+    "1.rajveersinghcse@gmail.com",
+  ];
+  if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
     return "admin";
   }
 
