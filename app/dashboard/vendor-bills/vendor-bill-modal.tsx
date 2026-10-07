@@ -7,7 +7,7 @@ import { createVendorBillAction, updateVendorBillAction, deleteVendorBillAction 
 import type { Vendor, Project, VendorBill } from "@/types/crm";
 import { ConfirmModal } from "../components/confirm-modal";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-[#FFFDF5] dark:bg-slate-800 p-2 text-xs font-medium text-[#1E293B] dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:shadow-pop-sm";
 
 export function VendorBillModal({
   vendors,
@@ -80,7 +80,7 @@ export function VendorBillModal({
             setError(null);
             setIsOpen(true);
           }}
-          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all cursor-pointer"
           title="Edit Bill"
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -102,30 +102,30 @@ export function VendorBillModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white dark:bg-slate-900 border-2 border-[#1E293B] dark:border-slate-800 p-6 text-left shadow-pop-lg transition-all">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-orange-500 border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">{isEdit ? "Edit Vendor Bill" : "Log Vendor Payable Bill"}</h3>
+            <span className="h-3 w-3 rounded-full bg-orange-500 border-2 border-[#1E293B] dark:border-slate-700" />
+            <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">{isEdit ? "Edit Vendor Bill" : "Log Vendor Payable Bill"}</h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[#1E293B] dark:text-slate-300 cursor-pointer"
           >
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
 
         {error && (
-          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/60 text-xs font-bold text-rose-700 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Vendor *</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Vendor *</label>
             <select
               name="vendor_id"
               required
@@ -141,7 +141,7 @@ export function VendorBillModal({
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Project</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Project</label>
             <select
               name="project_id"
               defaultValue={initialData?.project_id || ""}
@@ -158,7 +158,7 @@ export function VendorBillModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Bill # *</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Bill # *</label>
               <input
                 type="text"
                 name="bill_number"
@@ -169,7 +169,7 @@ export function VendorBillModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Amount (?) *</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Amount (₹) *</label>
               <input
                 type="number"
                 name="amount"
@@ -183,7 +183,7 @@ export function VendorBillModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Bill Date</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Bill Date</label>
               <input
                 type="date"
                 name="bill_date"
@@ -192,7 +192,7 @@ export function VendorBillModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Due Date</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Due Date</label>
               <input
                 type="date"
                 name="due_date"
@@ -204,7 +204,7 @@ export function VendorBillModal({
 
           {isEdit && (
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Payment Status</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Payment Status</label>
               <select
                 name="payment_status"
                 defaultValue={initialData?.payment_status || "pending"}
@@ -220,7 +220,7 @@ export function VendorBillModal({
           )}
 
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Notes</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Notes</label>
             <textarea
               name="notes"
               rows={2}
@@ -230,18 +230,18 @@ export function VendorBillModal({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-bold text-[#1E293B] dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] bg-orange-600 px-5 py-2 text-xs font-black text-white shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-slate-900 bg-orange-600 px-5 py-2 text-xs font-black text-white shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
             >
               {loading ? "Saving..." : isEdit ? "Update Bill" : "Record Bill"}
             </button>
@@ -277,7 +277,7 @@ export function DeleteVendorBillButton({ id, billNumber }: { id: string; billNum
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all cursor-pointer"
         title="Delete Vendor Bill"
       >
         <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />

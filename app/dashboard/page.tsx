@@ -216,19 +216,19 @@ export default async function DashboardPage() {
 
       {/* Row 2: Live Budget Alerts Banner (if any category >= 80%) */}
       {data.budgetAlerts.length > 0 && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50/60 p-4 space-y-2.5">
+        <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1 rounded-md bg-rose-100 text-rose-700">
+              <div className="p-1 rounded-md bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-400">
                 <AlertTriangle className="h-4 w-4" />
               </div>
-              <h3 className="text-xs font-bold text-rose-950 uppercase tracking-wide">
+              <h3 className="text-xs font-bold text-rose-950 dark:text-rose-200 uppercase tracking-wide">
                 Budget Utilization Alerts ({data.budgetAlerts.length})
               </h3>
             </div>
             <Link
               href="/dashboard/budgets"
-              className="text-xs font-bold text-rose-700 hover:text-rose-900 underline"
+              className="text-xs font-bold text-rose-700 dark:text-rose-400 hover:text-rose-900 dark:hover:text-rose-300 underline"
             >
               View Budgets &rarr;
             </Link>

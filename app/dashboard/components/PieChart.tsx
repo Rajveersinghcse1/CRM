@@ -107,9 +107,9 @@ export function PieChart({ data }: PieChartProps) {
                 d={slice.path}
                 fill={slice.color}
                 opacity={hoveredIndex === null || isHovered ? 1 : 0.65}
-                stroke="#1E293B"
+                stroke="currentColor"
                 strokeWidth={2.5}
-                className="cursor-pointer transition-all duration-200"
+                className="cursor-pointer transition-all duration-200 text-[#1E293B] dark:text-slate-800"
                 style={{
                   transform: isHovered
                     ? `translate(${
@@ -130,10 +130,7 @@ export function PieChart({ data }: PieChartProps) {
             x={cx}
             y={cy - 8}
             textAnchor="middle"
-            fill="#1E293B"
-            fontSize="13"
-            fontWeight="800"
-            fontFamily="inherit"
+            className="fill-slate-900 dark:fill-slate-100 font-extrabold text-[13px]"
           >
             {hovered ? hovered.name : "Total"}
           </text>
@@ -141,10 +138,7 @@ export function PieChart({ data }: PieChartProps) {
             x={cx}
             y={cy + 10}
             textAnchor="middle"
-            fill="#64748B"
-            fontSize="12"
-            fontWeight="700"
-            fontFamily="inherit"
+            className="fill-slate-500 dark:fill-slate-400 font-bold text-[12px]"
           >
             {hovered ? hovered.pct + "%" : fmt(total)}
           </text>
@@ -153,10 +147,7 @@ export function PieChart({ data }: PieChartProps) {
               x={cx}
               y={cy + 26}
               textAnchor="middle"
-              fill="#1E293B"
-              fontSize="10"
-              fontWeight="600"
-              fontFamily="inherit"
+              className="fill-slate-900 dark:fill-slate-200 font-semibold text-[10px]"
             >
               {fmt(hovered.value)}
             </text>
@@ -169,18 +160,18 @@ export function PieChart({ data }: PieChartProps) {
         {slices.map((slice) => (
           <div
             key={slice.index}
-            className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1 rounded-full border-2 border-[#1E293B] shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-2 cursor-pointer bg-white dark:bg-slate-800 px-3 py-1 rounded-full border-2 border-[#1E293B] dark:border-slate-700 shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
             onMouseEnter={() => setHoveredIndex(slice.index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <span
-              className="h-3 w-3 rounded-full shrink-0 border border-[#1E293B]"
+              className="h-3 w-3 rounded-full shrink-0 border border-[#1E293B] dark:border-slate-600"
               style={{ backgroundColor: slice.color }}
             />
-            <span className="text-xs text-[#1E293B] font-bold">
+            <span className="text-xs text-[#1E293B] dark:text-slate-200 font-bold">
               {slice.name}
             </span>
-            <span className="text-xs text-slate-500 font-semibold">({slice.pct}%)</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">({slice.pct}%)</span>
           </div>
         ))}
       </div>

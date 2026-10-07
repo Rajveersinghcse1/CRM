@@ -23,23 +23,23 @@ export default async function CategoriesPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-full bg-teal-100 border-2 border-[#1E293B]">
-              <Tags className="h-4 w-4 text-teal-700" strokeWidth={2.5} />
+            <div className="p-1.5 rounded-full bg-teal-100 dark:bg-teal-950/60 border-2 border-[#1E293B] dark:border-slate-700">
+              <Tags className="h-4 w-4 text-teal-700 dark:text-teal-400" strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B]">
+            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B] dark:text-slate-100">
               Project Categories & Cost Centers
             </h2>
           </div>
-          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
+          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
             Company-wide monitoring of internal work categories, allocated budgets, and expenditure utilization.
           </p>
         </div>
         <Link
           href="/dashboard/projects"
-          className="rounded-full border-2 border-[#1E293B] bg-white px-4 py-2 text-xs font-bold text-[#1E293B] shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
+          className="rounded-full border-2 border-[#1E293B] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-[#1E293B] dark:text-slate-200 shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
         >
           View All Projects
         </Link>
@@ -48,27 +48,27 @@ export default async function CategoriesPage() {
       {/* Categories by Project */}
       <div className="space-y-6">
         {allProjectCategories.map(({ project, categories }) => (
-          <div key={project.id} className="rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop overflow-hidden">
-            <div className="p-4 border-b-2 border-[#1E293B] bg-[#FFFDF5] flex items-center justify-between">
+          <div key={project.id} className="rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop overflow-hidden">
+            <div className="p-4 border-b-2 border-[#1E293B] dark:border-slate-800 bg-[#FFFDF5] dark:bg-slate-800/80 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <FolderKanban className="h-4 w-4 text-purple-700" strokeWidth={2.5} />
+                <FolderKanban className="h-4 w-4 text-purple-700 dark:text-purple-400" strokeWidth={2.5} />
                 <Link
                   href={`/dashboard/projects/${project.id}`}
-                  className="font-black text-sm text-[#1E293B] hover:underline"
+                  className="font-black text-sm text-[#1E293B] dark:text-slate-100 hover:underline"
                 >
                   {project.name}
                 </Link>
-                <span className="text-xs text-slate-500 font-semibold">
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
                   (Client: {project.client?.name || "Client"})
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-black text-[#1E293B]">
+                <span className="text-xs font-black text-[#1E293B] dark:text-slate-200">
                   Budget: {formatINR(project.overall_budget)}
                 </span>
                 <Link
                   href={`/dashboard/projects/${project.id}?tab=categories`}
-                  className="rounded-full border border-[#1E293B] bg-violet-50 px-3 py-0.5 text-xs font-bold text-[#8B5CF6] hover:bg-violet-100"
+                  className="rounded-full border border-[#1E293B] dark:border-slate-700 bg-violet-50 dark:bg-violet-950/60 px-3 py-0.5 text-xs font-bold text-[#8B5CF6] dark:text-purple-300 hover:bg-violet-100 dark:hover:bg-violet-900/60"
                 >
                   Manage Categories →
                 </Link>
@@ -76,35 +76,35 @@ export default async function CategoriesPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y-2 divide-[#1E293B]/10">
-                <thead className="bg-[#FFFDF5] border-b border-slate-200">
+              <table className="min-w-full divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800">
+                <thead className="bg-[#FFFDF5] dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="py-3 pl-4 pr-3 text-left text-[11px] font-black uppercase text-[#1E293B] sm:pl-6">
+                    <th className="py-3 pl-4 pr-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300 sm:pl-6">
                       Category
                     </th>
-                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300">
                       Allocated Budget
                     </th>
-                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300">
                       Actual Cost
                     </th>
-                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300">
                       Remaining
                     </th>
-                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300">
                       Utilization
                     </th>
-                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B]">
+                    <th className="px-3 py-3 text-left text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300">
                       Health
                     </th>
                     {canAdd && (
-                      <th className="px-3 py-3 text-right text-[11px] font-black uppercase text-[#1E293B] pr-6">
+                      <th className="px-3 py-3 text-right text-[11px] font-black uppercase text-[#1E293B] dark:text-slate-300 pr-6">
                         Actions
                       </th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
+                <tbody className="divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800 bg-white dark:bg-slate-900">
                   {categories.map((cat) => {
                     const actual = cat.actual_cost || 0;
                     const budget = cat.budget || 0;
@@ -114,20 +114,20 @@ export default async function CategoriesPage() {
                     const badge = getBudgetHealthBadge(healthStatus);
 
                     return (
-                      <tr key={cat.id} className="hover:bg-violet-50/40 transition-colors">
-                        <td className="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-bold text-[#1E293B] sm:pl-6">
+                      <tr key={cat.id} className="hover:bg-violet-50/40 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="whitespace-nowrap py-3 pl-4 pr-3 text-xs font-bold text-[#1E293B] dark:text-slate-100 sm:pl-6">
                           {cat.name}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-3 text-xs font-black text-[#1E293B]">
+                        <td className="whitespace-nowrap px-3 py-3 text-xs font-black text-[#1E293B] dark:text-slate-100">
                           {formatINR(budget)}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-3 text-xs font-bold text-rose-700">
+                        <td className="whitespace-nowrap px-3 py-3 text-xs font-bold text-rose-700 dark:text-rose-400">
                           {formatINR(actual)}
                         </td>
-                        <td className={`whitespace-nowrap px-3 py-3 text-xs font-bold ${remaining < 0 ? 'text-rose-700' : 'text-slate-700'}`}>
+                        <td className={`whitespace-nowrap px-3 py-3 text-xs font-bold ${remaining < 0 ? 'text-rose-700 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>
                           {formatINR(remaining)}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-3 text-xs font-black text-[#1E293B]">
+                        <td className="whitespace-nowrap px-3 py-3 text-xs font-black text-[#1E293B] dark:text-slate-100">
                           {util.toFixed(1)}%
                         </td>
                         <td className="whitespace-nowrap px-3 py-3">
@@ -150,7 +150,7 @@ export default async function CategoriesPage() {
                   })}
                   {categories.length === 0 && (
                     <tr>
-                      <td colSpan={canAdd ? 7 : 6} className="py-6 text-center text-xs text-slate-400 font-medium">
+                      <td colSpan={canAdd ? 7 : 6} className="py-6 text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
                         No categories configured for this project.
                       </td>
                     </tr>

@@ -100,19 +100,19 @@ export default async function AnalyticsPage() {
   }).sort((a, b) => b.margin - a.margin);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-full bg-violet-100 border-2 border-[#1E293B]">
-              <BarChart3 className="h-4 w-4 text-violet-600" strokeWidth={2.5} />
+            <div className="p-1.5 rounded-full bg-violet-100 dark:bg-violet-950/60 border-2 border-[#1E293B] dark:border-slate-700">
+              <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" strokeWidth={2.5} />
             </div>
-            <h2 className="text-3xl font-black tracking-tight text-[#1E293B] font-display">
+            <h2 className="text-3xl font-black tracking-tight text-[#1E293B] dark:text-slate-100 font-display">
               Reports & Business Analytics
             </h2>
           </div>
-          <p className="mt-1 text-sm font-medium text-slate-600">
+          <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">
             Comprehensive financial breakdown, expense distribution, lead conversion, and project margin rankings.
           </p>
         </div>
@@ -120,45 +120,45 @@ export default async function AnalyticsPage() {
 
       {/* High-Level Financial Pulse Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="p-5 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
-          <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Total Contract Value</p>
-          <p className="mt-2 text-2xl font-black text-[#1E293B]">{formatINR(totalPipeline)}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1">{projects.length} Total Projects</p>
+        <div className="p-5 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
+          <p className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">Total Contract Value</p>
+          <p className="mt-2 text-2xl font-black text-[#1E293B] dark:text-slate-100">{formatINR(totalPipeline)}</p>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{projects.length} Total Projects</p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
-          <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Collected Cash</p>
-          <p className="mt-2 text-2xl font-black text-emerald-700">{formatINR(totalCollected)}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1">
+        <div className="p-5 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
+          <p className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">Collected Cash</p>
+          <p className="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-400">{formatINR(totalCollected)}</p>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
             {totalPipeline > 0 ? Math.round((totalCollected / totalPipeline) * 100) : 0}% Realized
           </p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
-          <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Total Expenses</p>
-          <p className="mt-2 text-2xl font-black text-rose-700">{formatINR(totalCosts)}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1">{expenses.length} Expense Entries</p>
+        <div className="p-5 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
+          <p className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">Total Expenses</p>
+          <p className="mt-2 text-2xl font-black text-rose-700 dark:text-rose-400">{formatINR(totalCosts)}</p>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{expenses.length} Expense Entries</p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
+        <div className="p-5 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Net Gross Profit</p>
-            <span className="px-2 py-0.5 rounded font-black text-xs bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <p className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">Net Gross Profit</p>
+            <span className="px-2 py-0.5 rounded font-black text-xs bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80">
               {grossMarginPct}%
             </span>
           </div>
-          <p className="mt-2 text-2xl font-black text-[#1E293B]">{formatINR(totalGrossProfit)}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1">Revenue minus Direct Costs</p>
+          <p className="mt-2 text-2xl font-black text-[#1E293B] dark:text-slate-100">{formatINR(totalGrossProfit)}</p>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">Revenue minus Direct Costs</p>
         </div>
       </div>
 
       {/* Row 2: Expense Category Breakdown + Lead Conversion Funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Category Cost Distribution */}
-        <div className="p-6 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 pb-3">
+        <div className="p-6 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
-              <Receipt className="h-5 w-5 text-rose-600" />
-              <h3 className="text-lg font-black text-[#1E293B]">Cost by Category</h3>
+              <Receipt className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+              <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">Cost by Category</h3>
             </div>
-            <span className="text-xs font-bold text-slate-500">Across all projects</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Across all projects</span>
           </div>
 
           {categoryExpenses.length === 0 ? (
@@ -167,11 +167,11 @@ export default async function AnalyticsPage() {
             <div className="space-y-3.5">
               {categoryExpenses.map((cat, idx) => (
                 <div key={idx} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-black text-[#1E293B]">
+                  <div className="flex items-center justify-between text-xs font-black text-[#1E293B] dark:text-slate-200">
                     <span>{cat.name}</span>
                     <span>{formatINR(cat.amount)} ({cat.pct}%)</span>
                   </div>
-                  <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                  <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                     <div
                       className="h-full bg-rose-500 rounded-full transition-all"
                       style={{ width: `${Math.max(4, cat.pct)}%` }}
@@ -184,23 +184,23 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Lead Pipeline Conversion Funnel */}
-        <div className="p-6 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 pb-3">
+        <div className="p-6 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-sky-600" />
-              <h3 className="text-lg font-black text-[#1E293B]">Lead Pipeline Funnel</h3>
+              <Users className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+              <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">Lead Pipeline Funnel</h3>
             </div>
-            <span className="text-xs font-bold text-slate-500">{leads.length} Total Leads</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{leads.length} Total Leads</span>
           </div>
 
           <div className="space-y-3.5">
             {leadCounts.map((st) => (
               <div key={st.status} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-black">
-                  <span className="capitalize text-[#1E293B]">{st.status}</span>
-                  <span className="text-slate-600">{st.count} leads ({st.pct}%)</span>
+                  <span className="capitalize text-[#1E293B] dark:text-slate-200">{st.status}</span>
+                  <span className="text-slate-600 dark:text-slate-400">{st.count} leads ({st.pct}%)</span>
                 </div>
-                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                   <div
                     className={`h-full rounded-full transition-all ${
                       st.status === "converted"
@@ -221,13 +221,13 @@ export default async function AnalyticsPage() {
       {/* Row 3: Client Value Leaderboard + Project Margin Rankings */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top Clients by Contract Value */}
-        <div className="p-6 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 pb-3">
+        <div className="p-6 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-amber-600" />
-              <h3 className="text-lg font-black text-[#1E293B]">Top Clients by Revenue</h3>
+              <Coins className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">Top Clients by Revenue</h3>
             </div>
-            <Link href="/dashboard/clients" className="text-xs font-black text-amber-600 hover:text-amber-800">
+            <Link href="/dashboard/clients" className="text-xs font-black text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300">
               Clients Hub &rarr;
             </Link>
           </div>
@@ -235,29 +235,29 @@ export default async function AnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-medium">
               <thead>
-                <tr className="border-b-2 border-[#1E293B] text-[11px] font-black uppercase text-slate-500">
+                <tr className="border-b-2 border-[#1E293B] dark:border-slate-700 text-[11px] font-black uppercase text-slate-500 dark:text-slate-400">
                   <th className="py-2">Client</th>
                   <th className="py-2 text-center">Projects</th>
                   <th className="py-2 text-right">Contract</th>
                   <th className="py-2 text-right">Collected</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {clientValues.slice(0, 5).map((cv) => (
-                  <tr key={cv.client.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 font-black text-[#1E293B]">
+                  <tr key={cv.client.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="py-2.5 font-black text-[#1E293B] dark:text-slate-100">
                       <Link href={`/dashboard/clients/${cv.client.id}`} className="hover:underline">
                         {cv.client.name}
                       </Link>
                       {(cv.client.company_name || cv.client.company?.name) && (
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">
                           {cv.client.company_name || cv.client.company?.name}
                         </div>
                       )}
                     </td>
-                    <td className="py-2.5 text-center font-bold text-slate-600">{cv.projectsCount}</td>
-                    <td className="py-2.5 text-right font-black text-[#1E293B]">{formatINR(cv.contractValue)}</td>
-                    <td className="py-2.5 text-right font-black text-emerald-700">{formatINR(cv.collected)}</td>
+                    <td className="py-2.5 text-center font-bold text-slate-600 dark:text-slate-300">{cv.projectsCount}</td>
+                    <td className="py-2.5 text-right font-black text-[#1E293B] dark:text-slate-100">{formatINR(cv.contractValue)}</td>
+                    <td className="py-2.5 text-right font-black text-emerald-700 dark:text-emerald-400">{formatINR(cv.collected)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -266,13 +266,13 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Project Margin Rankings */}
-        <div className="p-6 rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 pb-3">
+        <div className="p-6 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop space-y-4">
+          <div className="flex items-center justify-between border-b-2 border-[#1E293B]/10 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-emerald-600" />
-              <h3 className="text-lg font-black text-[#1E293B]">Project Margin Rankings</h3>
+              <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">Project Margin Rankings</h3>
             </div>
-            <Link href="/dashboard/profitability" className="text-xs font-black text-emerald-600 hover:text-emerald-800">
+            <Link href="/dashboard/profitability" className="text-xs font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300">
               Full Report &rarr;
             </Link>
           </div>
@@ -280,26 +280,26 @@ export default async function AnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-medium">
               <thead>
-                <tr className="border-b-2 border-[#1E293B] text-[11px] font-black uppercase text-slate-500">
+                <tr className="border-b-2 border-[#1E293B] dark:border-slate-700 text-[11px] font-black uppercase text-slate-500 dark:text-slate-400">
                   <th className="py-2">Project</th>
                   <th className="py-2 text-right">Contract</th>
                   <th className="py-2 text-right">Actual Cost</th>
                   <th className="py-2 text-right">Margin %</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {projectRankings.slice(0, 5).map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 font-black text-[#1E293B]">
+                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="py-2.5 font-black text-[#1E293B] dark:text-slate-100">
                       <Link href={`/dashboard/projects/${p.id}`} className="hover:underline">
                         {p.name}
                       </Link>
-                      <div className="text-[10px] text-slate-400">{p.client?.name}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500">{p.client?.name}</div>
                     </td>
-                    <td className="py-2.5 text-right font-bold text-slate-700">{formatINR(p.project_value)}</td>
-                    <td className="py-2.5 text-right font-bold text-rose-600">{formatINR(p.totalActualCost || 0)}</td>
+                    <td className="py-2.5 text-right font-bold text-slate-700 dark:text-slate-300">{formatINR(p.project_value)}</td>
+                    <td className="py-2.5 text-right font-bold text-rose-600 dark:text-rose-400">{formatINR(p.totalActualCost || 0)}</td>
                     <td className="py-2.5 text-right">
-                      <span className="px-2 py-0.5 rounded font-black text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <span className="px-2 py-0.5 rounded font-black text-[11px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80">
                         {p.margin}%
                       </span>
                     </td>

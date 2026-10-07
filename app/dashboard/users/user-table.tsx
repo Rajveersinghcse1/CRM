@@ -102,8 +102,8 @@ export function UserTable({
   return (
     <div className="space-y-4">
       {!isAdmin && (
-        <div className="rounded-2xl bg-sky-50 border-2 border-[#1E293B] p-3 text-xs font-bold text-sky-950 shadow-pop-sm flex items-center gap-2.5">
-          <span className="px-2 py-0.5 rounded-lg bg-white border border-[#1E293B] text-sky-700 font-black uppercase text-[10px]">
+        <div className="rounded-2xl bg-sky-50 dark:bg-sky-950/40 border-2 border-[#1E293B] dark:border-slate-800 p-3 text-xs font-bold text-sky-950 dark:text-sky-300 shadow-pop-sm flex items-center gap-2.5">
+          <span className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-[#1E293B] dark:border-slate-700 text-sky-700 dark:text-sky-400 font-black uppercase text-[10px]">
             Manager Mode
           </span>
           <span>
@@ -113,49 +113,49 @@ export function UserTable({
       )}
 
       {actionError && (
-        <div className="rounded-xl bg-rose-50 border-2 border-rose-400 p-3 text-sm font-bold text-rose-700">
+        <div className="rounded-xl bg-rose-50 dark:bg-rose-950/60 border-2 border-rose-400 dark:border-rose-900 p-3 text-sm font-bold text-rose-700 dark:text-rose-400">
           {actionError}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
+      <div className="overflow-hidden rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y-2 divide-[#1E293B]/10">
-            <thead className="bg-[#FFFDF5] border-b-2 border-[#1E293B]">
+          <table className="min-w-full divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800">
+            <thead className="bg-[#FFFDF5] dark:bg-slate-800/80 border-b-2 border-[#1E293B] dark:border-slate-800">
               <tr>
                 <th
                   scope="col"
-                  className="py-4 pl-4 pr-3 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] sm:pl-6"
+                  className="py-4 pl-4 pr-3 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200 sm:pl-6"
                 >
                   User
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]"
+                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200"
                 >
                   Role
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]"
+                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200"
                 >
                   Created
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]"
+                  className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200"
                 >
                   Last Login
                 </th>
                 <th
                   scope="col"
-                  className="relative py-4 pl-3 pr-4 sm:pr-6 text-right text-xs font-black uppercase tracking-wider text-[#1E293B]"
+                  className="relative py-4 pl-3 pr-4 sm:pr-6 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200"
                 >
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
+            <tbody className="divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800 bg-white dark:bg-slate-900">
               {users.map((user) => {
                 const badge = ROLE_BADGES[user.role] || ROLE_BADGES.employee;
                 const isSelf = user.id === currentUserId;
@@ -163,23 +163,23 @@ export function UserTable({
                 return (
                   <tr
                     key={user.id}
-                    className="hover:bg-violet-50/40 transition-colors"
+                    className="hover:bg-violet-50/40 dark:hover:bg-slate-800/50 transition-colors"
                   >
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-[#1E293B] sm:pl-6">
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-[#1E293B] dark:text-slate-100 sm:pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-violet-100 border-2 border-[#1E293B] flex items-center justify-center text-[#8B5CF6] font-black text-sm shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-950/60 border-2 border-[#1E293B] dark:border-slate-700 flex items-center justify-center text-[#8B5CF6] dark:text-purple-400 font-black text-sm shrink-0">
                           {user.fullName.charAt(0).toUpperCase() || "U"}
                         </div>
                         <div>
-                          <div className="flex items-center gap-1.5 font-bold text-[#1E293B]">
+                          <div className="flex items-center gap-1.5 font-bold text-[#1E293B] dark:text-slate-100">
                             {user.fullName}
                             {isSelf && (
-                              <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded-full font-bold">
+                              <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded-full font-bold">
                                 You
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-slate-500 font-medium">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                             {user.email}
                           </div>
                         </div>
@@ -192,7 +192,7 @@ export function UserTable({
                           onChange={(e) => handleRoleChange(user.id, e.target.value)}
                           disabled={isPending}
                           aria-label={`Change role for ${user.fullName}`}
-                          className={`text-xs font-black uppercase tracking-wider rounded-xl border-2 border-[#1E293B] px-2.5 py-1 shadow-pop-sm focus:outline-none cursor-pointer hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all ${badge.bg} ${badge.text}`}
+                          className={`text-xs font-black uppercase tracking-wider rounded-xl border-2 border-[#1E293B] dark:border-slate-700 px-2.5 py-1 shadow-pop-sm focus:outline-none cursor-pointer hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all ${badge.bg} ${badge.text}`}
                         >
                           <option value="admin">Admin</option>
                           <option value="manager">Manager</option>
@@ -213,10 +213,10 @@ export function UserTable({
                         </span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-500">
+                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-500 dark:text-slate-400">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-500">
+                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-500 dark:text-slate-400">
                       {user.lastSignInAt
                         ? new Date(user.lastSignInAt).toLocaleDateString()
                         : "Never"}
@@ -226,13 +226,13 @@ export function UserTable({
                         <button
                           onClick={() => setRevokeTarget({ id: user.id, email: user.email })}
                           disabled={isPending}
-                          className="p-1.5 rounded-lg border-2 border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:border-rose-500 shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+                          className="p-1.5 rounded-lg border-2 border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:border-rose-500 shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
                           title="Revoke CRM Access"
                         >
                           <Trash2 className="h-4 w-4" strokeWidth={2.5} />
                         </button>
                       ) : (
-                        <span className="text-slate-300 font-bold text-xs">—</span>
+                        <span className="text-slate-300 dark:text-slate-600 font-bold text-xs">—</span>
                       )}
                     </td>
                   </tr>
@@ -242,7 +242,7 @@ export function UserTable({
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-12 text-center text-sm font-medium text-slate-400"
+                    className="py-12 text-center text-sm font-medium text-slate-400 dark:text-slate-500"
                   >
                     No users found.
                   </td>

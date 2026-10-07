@@ -30,17 +30,17 @@ export default async function VendorBillsPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-full bg-orange-100 border-2 border-[#1E293B]">
-              <FileSpreadsheet className="h-4 w-4 text-orange-700" strokeWidth={2.5} />
+            <div className="p-1.5 rounded-full bg-orange-100 dark:bg-orange-950/60 border-2 border-[#1E293B] dark:border-slate-700">
+              <FileSpreadsheet className="h-4 w-4 text-orange-700 dark:text-orange-400" strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B]">
+            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B] dark:text-slate-100">
               Vendor Bills (Accounts Payable)
             </h2>
           </div>
-          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
+          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
             Track external invoices owed to vendors, suppliers, and freelancers (separate from client billing).
           </p>
         </div>
@@ -48,82 +48,82 @@ export default async function VendorBillsPage() {
       </div>
 
       {/* Summary Card */}
-      <div className="flex items-center gap-4 rounded-2xl border-2 border-[#1E293B] bg-white p-5 shadow-pop">
-        <div className="h-12 w-12 rounded-2xl bg-orange-100 border-2 border-[#1E293B] flex items-center justify-center text-orange-800 shrink-0 shadow-pop-sm">
+      <div className="flex items-center gap-4 rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-pop">
+        <div className="h-12 w-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border-2 border-[#1E293B] dark:border-slate-700 flex items-center justify-center text-orange-800 dark:text-orange-300 shrink-0 shadow-pop-sm">
           <FileSpreadsheet className="h-6 w-6" strokeWidth={2.5} />
         </div>
         <div>
-          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Total Pending Vendor Payables
           </p>
-          <p className="text-3xl font-black text-orange-800 mt-0.5">
+          <p className="text-3xl font-black text-orange-800 dark:text-orange-400 mt-0.5">
             {formatINR(totalOwed)}
           </p>
         </div>
       </div>
 
       {/* Vendor Bills Table */}
-      <div className="overflow-hidden rounded-2xl border-2 border-[#1E293B] bg-white shadow-pop">
+      <div className="overflow-hidden rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 shadow-pop">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y-2 divide-[#1E293B]/10">
-            <thead className="bg-[#FFFDF5] border-b-2 border-[#1E293B]">
+          <table className="min-w-full divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800">
+            <thead className="bg-[#FFFDF5] dark:bg-slate-800/80 border-b-2 border-[#1E293B] dark:border-slate-800">
               <tr>
-                <th className="py-4 pl-4 pr-3 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] sm:pl-6">
+                <th className="py-4 pl-4 pr-3 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200 sm:pl-6">
                   Bill #
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Vendor
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Project
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Amount
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Bill Date
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Due Date
                 </th>
-                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B]">
+                <th className="px-3 py-4 text-left text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200">
                   Status
                 </th>
                 {canAdd && (
-                  <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] pr-6">
+                  <th className="px-3 py-4 text-right text-xs font-black uppercase tracking-wider text-[#1E293B] dark:text-slate-200 pr-6">
                     Actions
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-[#1E293B]/10 bg-white">
+            <tbody className="divide-y-2 divide-[#1E293B]/10 dark:divide-slate-800 bg-white dark:bg-slate-900">
               {bills.map((b) => {
                 const badge = STATUS_BADGES[b.payment_status] || STATUS_BADGES.pending;
                 return (
-                  <tr key={b.id} className="hover:bg-violet-50/40 transition-colors">
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-xs font-bold text-[#1E293B] sm:pl-6">
+                  <tr key={b.id} className="hover:bg-violet-50/40 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-xs font-bold text-[#1E293B] dark:text-slate-100 sm:pl-6">
                       <div>{b.bill_number}</div>
-                      {b.notes && <div className="text-[10px] text-slate-500 font-medium truncate max-w-[150px]">{b.notes}</div>}
+                      {b.notes && <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[150px]">{b.notes}</div>}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-xs font-bold text-[#1E293B]">
+                    <td className="whitespace-nowrap px-3 py-4 text-xs font-bold text-[#1E293B] dark:text-slate-200">
                       {b.vendor?.name || "Vendor"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-xs font-semibold text-slate-600">
+                    <td className="whitespace-nowrap px-3 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
                       {b.project ? (
-                        <Link href={`/dashboard/projects/${b.project_id}`} className="hover:underline text-purple-700">
+                        <Link href={`/dashboard/projects/${b.project_id}`} className="hover:underline text-purple-700 dark:text-purple-400">
                           {b.project.name}
                         </Link>
                       ) : (
                         "—"
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-xs font-black text-rose-700">
+                    <td className="whitespace-nowrap px-3 py-4 text-xs font-black text-rose-700 dark:text-rose-400">
                       {formatINR(b.total_amount)}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500">
+                    <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {new Date(b.bill_date).toLocaleDateString()}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500">
+                    <td className="whitespace-nowrap px-3 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">
                       {b.due_date ? new Date(b.due_date).toLocaleDateString() : "—"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4">
@@ -146,7 +146,7 @@ export default async function VendorBillsPage() {
               })}
               {bills.length === 0 && (
                 <tr>
-                  <td colSpan={canAdd ? 8 : 7} className="py-12 text-center text-sm font-medium text-slate-400">
+                  <td colSpan={canAdd ? 8 : 7} className="py-12 text-center text-sm font-medium text-slate-400 dark:text-slate-500">
                     {canAdd
                       ? 'No vendor bills recorded. Click "Log Vendor Bill" to track payables.'
                       : "No vendor bills recorded."}

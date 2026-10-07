@@ -7,7 +7,7 @@ import { createActivityAction, updateActivityAction, deleteActivityAction } from
 import type { Client, Project, Activity } from "@/types/crm";
 import { ConfirmModal } from "../components/confirm-modal";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-[#FFFDF5] dark:bg-slate-800 p-2 text-xs font-medium text-[#1E293B] dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:shadow-pop-sm";
 
 export function ActivityModal({
   clients,
@@ -52,7 +52,7 @@ export function ActivityModal({
       return (
         <button
           onClick={() => setIsOpen(true)}
-          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all cursor-pointer"
           title="Edit Activity"
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -62,7 +62,7 @@ export function ActivityModal({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] dark:border-pink-500/40 btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
       >
         <ActivityIcon className="h-4 w-4" strokeWidth={2.5} />
         Log Activity
@@ -71,16 +71,16 @@ export function ActivityModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 dark:bg-slate-950/75 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white dark:bg-slate-900 border-2 border-[#1E293B] dark:border-slate-700 p-6 text-left shadow-pop-lg transition-all">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-pink-500 border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">{isEdit ? "Edit Activity" : "Log Interaction Activity"}</h3>
+            <span className="h-3 w-3 rounded-full bg-pink-500 border-2 border-[#1E293B] dark:border-pink-400" />
+            <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">{isEdit ? "Edit Activity" : "Log Interaction Activity"}</h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[#1E293B] dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
           >
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
@@ -88,7 +88,7 @@ export function ActivityModal({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Title *</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Title *</label>
             <input
               type="text"
               name="title"
@@ -101,30 +101,30 @@ export function ActivityModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Type</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Type</label>
               <select
                 name="type"
                 defaultValue={initialData?.type || "meeting"}
                 className={INPUT}
               >
-                <option value="meeting">Meeting</option>
-                <option value="call">Phone Call</option>
-                <option value="whatsapp">WhatsApp</option>
-                <option value="email">Email</option>
-                <option value="follow_up">Follow Up</option>
-                <option value="note">Internal Note</option>
+                <option value="meeting" className="dark:bg-slate-900 dark:text-slate-100">Meeting</option>
+                <option value="call" className="dark:bg-slate-900 dark:text-slate-100">Phone Call</option>
+                <option value="whatsapp" className="dark:bg-slate-900 dark:text-slate-100">WhatsApp</option>
+                <option value="email" className="dark:bg-slate-900 dark:text-slate-100">Email</option>
+                <option value="follow_up" className="dark:bg-slate-900 dark:text-slate-100">Follow Up</option>
+                <option value="note" className="dark:bg-slate-900 dark:text-slate-100">Internal Note</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Client</label>
+              <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Client</label>
               <select
                 name="client_id"
                 defaultValue={initialData?.client_id || ""}
                 className={INPUT}
               >
-                <option value="">None / General</option>
+                <option value="" className="dark:bg-slate-900 dark:text-slate-100">None / General</option>
                 {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} value={c.id} className="dark:bg-slate-900 dark:text-slate-100">
                     {c.name}
                   </option>
                 ))}
@@ -133,15 +133,15 @@ export function ActivityModal({
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Project</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Project</label>
             <select
               name="project_id"
               defaultValue={initialData?.project_id || ""}
               className={INPUT}
             >
-              <option value="">None / General</option>
+              <option value="" className="dark:bg-slate-900 dark:text-slate-100">None / General</option>
               {projects.map((p) => (
-                <option key={p.id} value={p.id}>
+                <option key={p.id} value={p.id} className="dark:bg-slate-900 dark:text-slate-100">
                   {p.name}
                 </option>
               ))}
@@ -149,7 +149,7 @@ export function ActivityModal({
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Description / Summary</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-300 mb-1">Description / Summary</label>
             <textarea
               name="description"
               rows={3}
@@ -163,14 +163,14 @@ export function ActivityModal({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-bold text-[#1E293B] dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-pink-500/40 btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
             >
               {loading ? "Saving..." : isEdit ? "Update Activity" : "Log Activity"}
             </button>
@@ -206,7 +206,7 @@ export function DeleteActivityButton({ id, title }: { id: string; title: string 
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all cursor-pointer"
         title="Delete Activity"
       >
         <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />

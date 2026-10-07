@@ -7,7 +7,7 @@ import { createDealAction, updateDealAction, deleteDealAction } from "@/app/acti
 import type { Client, Service, Deal } from "@/types/crm";
 import { ConfirmModal } from "../components/confirm-modal";
 
-const INPUT = "w-full rounded-xl border-2 border-[#1E293B] bg-[#FFFDF5] p-2 text-xs font-medium text-[#1E293B] focus:outline-none focus:shadow-pop-sm";
+const INPUT = "w-full rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-[#FFFDF5] dark:bg-slate-800 p-2 text-xs font-medium text-[#1E293B] dark:text-slate-100 focus:outline-none focus:shadow-pop-sm focus:dark:border-indigo-500";
 
 export function DealModal({
   clients,
@@ -76,7 +76,7 @@ export function DealModal({
             setError(null);
             setIsOpen(true);
           }}
-          className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all cursor-pointer"
           title="Edit Deal"
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -89,7 +89,7 @@ export function DealModal({
           setError(null);
           setIsOpen(true);
         }}
-        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#1E293B] dark:border-slate-700 btn-primary px-4 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
       >
         <GitPullRequest className="h-4 w-4" strokeWidth={2.5} />
         Create Deal
@@ -98,30 +98,30 @@ export function DealModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white border-2 border-[#1E293B] p-6 text-left shadow-pop-lg transition-all">
-        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E293B]/40 dark:bg-slate-950/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg transform overflow-y-auto max-h-[90vh] rounded-2xl bg-white dark:bg-slate-900 border-2 border-[#1E293B] dark:border-slate-800 p-6 text-left shadow-pop-lg transition-all">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-[#D97706] border-2 border-[#1E293B]" />
-            <h3 className="text-lg font-black text-[#1E293B]">{isEdit ? "Edit Deal Opportunity" : "Create New Deal Opportunity"}</h3>
+            <span className="h-3 w-3 rounded-full bg-[#D97706] border-2 border-[#1E293B] dark:border-slate-700" />
+            <h3 className="text-lg font-black text-[#1E293B] dark:text-slate-100">{isEdit ? "Edit Deal Opportunity" : "Create New Deal Opportunity"}</h3>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg border-2 border-[#1E293B] bg-slate-50 text-[#1E293B] cursor-pointer"
+            className="p-1 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[#1E293B] dark:text-slate-200 cursor-pointer"
           >
             <X className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
 
         {error && (
-          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 bg-rose-50 text-xs font-bold text-rose-700">
+          <div className="mt-3 p-2.5 rounded-xl border-2 border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/60 text-xs font-bold text-rose-700 dark:text-rose-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="block text-xs font-black uppercase text-[#1E293B] mb-1">Deal Name *</label>
+            <label className="block text-xs font-black uppercase text-[#1E293B] dark:text-slate-200 mb-1">Deal Name *</label>
             <input
               type="text"
               name="deal_name"
@@ -232,14 +232,14 @@ export function DealModal({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-xl border-2 border-[#1E293B] bg-slate-100 px-4 py-2 text-xs font-bold text-[#1E293B] hover:bg-slate-200 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-bold text-[#1E293B] dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl border-2 border-[#1E293B] btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
+              className="rounded-xl border-2 border-[#1E293B] dark:border-slate-700 btn-primary px-5 py-2 text-xs font-black shadow-pop hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 transition-all cursor-pointer"
             >
               {loading ? "Saving..." : isEdit ? "Update Deal" : "Save Deal"}
             </button>
@@ -275,7 +275,7 @@ export function DeleteDealButton({ id, name }: { id: string; name: string }) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="p-1.5 rounded-lg border-2 border-[#1E293B] bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
+        className="p-1.5 rounded-lg border-2 border-[#1E293B] dark:border-slate-700 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all cursor-pointer"
         title="Delete Deal"
       >
         <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />

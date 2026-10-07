@@ -229,12 +229,12 @@ export function MobileNav({ email, role }: { email?: string; role: string | null
                           onClick={() => setIsOpen(false)}
                           className={`flex items-center gap-2.5 px-3 py-1.5 text-xs font-bold rounded-xl border-2 transition-all ${
                             isActive
-                              ? "bg-violet-50 text-[#1E293B] border-[#1E293B] shadow-pop-sm"
-                              : "text-slate-600 border-transparent hover:border-[#1E293B] hover:bg-slate-50 hover:text-[#1E293B]"
+                              ? "bg-violet-50 dark:bg-violet-950/60 text-[#1E293B] dark:text-purple-300 border-[#1E293B] dark:border-slate-700 shadow-pop-sm"
+                              : "text-slate-600 dark:text-slate-400 border-transparent hover:border-[#1E293B] dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#1E293B] dark:hover:text-slate-200"
                           }`}
                         >
                           <div
-                            className={`flex items-center justify-center h-6 w-6 rounded-lg border border-[#1E293B] shrink-0 ${item.color}`}
+                            className={`flex items-center justify-center h-6 w-6 rounded-lg border border-[#1E293B] dark:border-slate-700 shrink-0 ${item.color}`}
                           >
                             <Icon className="h-3.5 w-3.5" strokeWidth={2.5} />
                           </div>
@@ -248,16 +248,16 @@ export function MobileNav({ email, role }: { email?: string; role: string | null
             </div>
 
             {/* Bottom User Area */}
-            <div className="shrink-0 p-4 border-t-2 border-[#1E293B] bg-[#FFFDF5] space-y-3">
-              <div className="p-2.5 bg-white border-2 border-[#1E293B] rounded-2xl shadow-pop-sm">
-                <p className="text-xs font-black text-[#1E293B] truncate">{email}</p>
+            <div className="shrink-0 p-4 border-t-2 border-[#1E293B] dark:border-slate-800 bg-[#FFFDF5] dark:bg-slate-900 space-y-3">
+              <div className="p-2.5 bg-white dark:bg-slate-800 border-2 border-[#1E293B] dark:border-slate-700 rounded-2xl shadow-pop-sm">
+                <p className="text-xs font-black text-[#1E293B] dark:text-slate-100 truncate">{email}</p>
                 {(() => {
                   const roleBadges: Record<string, { bg: string; text: string; border: string; label: string }> = {
-                    admin: { bg: "bg-purple-100", text: "text-purple-900", border: "border-purple-400", label: "Admin" },
-                    manager: { bg: "bg-sky-100", text: "text-sky-900", border: "border-sky-400", label: "Manager" },
-                    sales: { bg: "bg-emerald-100", text: "text-emerald-900", border: "border-emerald-400", label: "Sales" },
-                    employee: { bg: "bg-slate-100", text: "text-slate-800", border: "border-slate-300", label: "Employee" },
-                    viewer: { bg: "bg-amber-100", text: "text-amber-900", border: "border-amber-300", label: "Viewer" },
+                    admin: { bg: "bg-purple-100 dark:bg-purple-950/60", text: "text-purple-900 dark:text-purple-300", border: "border-purple-400 dark:border-purple-800", label: "Admin" },
+                    manager: { bg: "bg-sky-100 dark:bg-sky-950/60", text: "text-sky-900 dark:text-sky-300", border: "border-sky-400 dark:border-sky-800", label: "Manager" },
+                    sales: { bg: "bg-emerald-100 dark:bg-emerald-950/60", text: "text-emerald-900 dark:text-emerald-300", border: "border-emerald-400 dark:border-emerald-800", label: "Sales" },
+                    employee: { bg: "bg-slate-100 dark:bg-slate-800", text: "text-slate-800 dark:text-slate-300", border: "border-slate-300 dark:border-slate-700", label: "Employee" },
+                    viewer: { bg: "bg-amber-100 dark:bg-amber-950/60", text: "text-amber-900 dark:text-amber-300", border: "border-amber-300 dark:border-amber-800", label: "Viewer" },
                   };
                   const activeBadge = roleBadges[role || "employee"] || roleBadges.employee;
                   return (
@@ -274,7 +274,7 @@ export function MobileNav({ email, role }: { email?: string; role: string | null
                   setIsOpen(false);
                   await signOut({ redirectUrl: "/" });
                 }}
-                className="flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-black text-rose-700 bg-rose-50 border-2 border-[#1E293B] rounded-xl shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all"
+                className="flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-black text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-2 border-[#1E293B] dark:border-slate-700 rounded-xl shadow-pop-sm hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 <LogOut className="h-4 w-4" strokeWidth={2.5} />
                 Sign Out

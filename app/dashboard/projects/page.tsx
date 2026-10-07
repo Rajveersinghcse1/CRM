@@ -28,20 +28,20 @@ export default async function ProjectsPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700">
+            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-400">
               <FolderKanban className="h-4 w-4" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Projects Hub
             </h1>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {projects.length} Total
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Client contracts, collections ledger, pending amounts, categorized expenses, and available liquidity.
           </p>
         </div>
@@ -62,21 +62,21 @@ export default async function ProjectsPage() {
       />
 
       {/* Projects List Card */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
               Projects Directory ({projects.length})
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             Client Pending vs Available Balance per project
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-100 text-xs">
-            <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+          <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 pl-5 pr-3 text-left">Project Name</th>
                 <th className="px-3 py-3.5 text-left">Client</th>
@@ -90,7 +90,7 @@ export default async function ProjectsPage() {
                 <th className="px-3 py-3.5 text-right pr-5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
               {projects.map((proj) => {
                 const collected = proj.totalCollected || 0;
                 const pending = proj.clientPending ?? Math.max(0, (proj.project_value || 0) - collected);
@@ -102,53 +102,53 @@ export default async function ProjectsPage() {
                 );
 
                 return (
-                  <tr key={proj.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="whitespace-nowrap py-3.5 pl-5 pr-3 font-bold text-slate-900">
+                  <tr key={proj.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="whitespace-nowrap py-3.5 pl-5 pr-3 font-bold text-slate-900 dark:text-slate-100">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-7 w-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 shrink-0">
+                        <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center text-xs font-bold text-indigo-700 dark:text-indigo-400 shrink-0">
                           {proj.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <Link href={`/dashboard/projects/${proj.id}`} className="hover:underline hover:text-indigo-600 font-bold">
+                          <Link href={`/dashboard/projects/${proj.id}`} className="hover:underline hover:text-indigo-600 dark:hover:text-indigo-400 font-bold">
                             {proj.name}
                           </Link>
-                          <p className="text-[10px] text-slate-400 font-semibold">{proj.project_code || "PRJ"}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{proj.project_code || "PRJ"}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3.5 text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-3.5 text-slate-700 dark:text-slate-300">
                       <div className="font-semibold">{proj.client?.name || "Client"}</div>
-                      <span className="text-[10px] text-slate-400 font-normal">{proj.client?.company_name}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{proj.client?.company_name}</span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-slate-900">
+                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-slate-900 dark:text-slate-100">
                       {formatINR(proj.project_value)}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-emerald-700">
+                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-emerald-700 dark:text-emerald-400">
                       {formatINR(collected)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3.5">
-                      <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60">
                         {formatINR(pending)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-rose-700">
+                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-rose-700 dark:text-rose-400">
                       {formatINR(expenses)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3.5">
                       <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] border ${
                         available >= 0
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                          : "bg-rose-50 text-rose-800 border-rose-200"
+                          ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60"
+                          : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-900/60"
                       }`}>
                         {formatINR(available)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-slate-900">
+                    <td className="whitespace-nowrap px-3 py-3.5 font-bold text-slate-900 dark:text-slate-100">
                       <div>{formatINR(profit)}</div>
-                      <span className="text-[10px] text-slate-400 font-medium">{margin}% Margin</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{margin}% Margin</span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-3.5 text-center">
-                      <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 font-bold uppercase text-slate-700 text-[10px]">
+                      <span className="rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 font-bold uppercase text-slate-700 dark:text-slate-300 text-[10px]">
                         {proj.status}
                       </span>
                     </td>
@@ -156,7 +156,7 @@ export default async function ProjectsPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/dashboard/projects/${proj.id}`}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 shadow-2xs transition-all"
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-2xs transition-all"
                         >
                           <span>Workspace</span>
                           <ArrowUpRight className="h-3.5 w-3.5" />

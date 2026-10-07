@@ -213,26 +213,26 @@ export function QuotationDocument({
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans pb-16 print:bg-white print:pb-0 print:m-0">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 font-sans pb-16 print:bg-white print:pb-0 print:m-0">
       {/* Top Floating Control Bar (Hidden on Print) */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-300 px-4 py-3 shadow-sm print:hidden">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-300 dark:border-slate-800 px-4 py-3 shadow-sm print:hidden">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
               href={backUrl}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition"
             >
               <ArrowLeft className="h-4 w-4" />
               {backLabel}
             </Link>
             <div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Quotation Preview
               </span>
-              <h1 className="text-sm font-black text-slate-900">{data.quotationNo}</h1>
+              <h1 className="text-sm font-black text-slate-900 dark:text-slate-100">{data.quotationNo}</h1>
             </div>
             {saveStatus && (
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md animate-pulse">
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 px-2.5 py-1 rounded-md animate-pulse">
                 {saveStatus}
               </span>
             )}
@@ -244,7 +244,7 @@ export function QuotationDocument({
                 href={currentPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition shadow-sm"
                 title="View PDF stored in Supabase Storage"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -258,7 +258,7 @@ export function QuotationDocument({
                   type="button"
                   onClick={handleSaveToDatabase}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition cursor-pointer disabled:opacity-50"
                   title="Save quotation details to Supabase Database"
                 >
                   {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -276,7 +276,7 @@ export function QuotationDocument({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition cursor-pointer disabled:opacity-50"
                   title="Upload PDF directly to Supabase Storage bucket"
                 >
                   {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
@@ -290,8 +290,8 @@ export function QuotationDocument({
               onClick={() => setIsEditing(!isEditing)}
               className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
                 isEditing
-                  ? "bg-amber-100 border-amber-400 text-amber-900"
-                  : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                  ? "bg-amber-100 dark:bg-amber-950/60 border-amber-400 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                  : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80"
               }`}
             >
               <Edit3 className="h-3.5 w-3.5" />
@@ -303,7 +303,7 @@ export function QuotationDocument({
                 type="button"
                 onClick={handleReset}
                 title="Reset to original project data"
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Reset
@@ -313,7 +313,7 @@ export function QuotationDocument({
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-1.5 text-xs font-black text-white hover:bg-slate-800 transition shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 text-xs font-black text-white transition shadow-sm cursor-pointer"
             >
               <Printer className="h-4 w-4" />
               Download / Print PDF
@@ -323,89 +323,89 @@ export function QuotationDocument({
 
         {/* Live Edit Drawer */}
         {isEditing && (
-          <div className="max-w-5xl mx-auto mt-4 p-4 rounded-xl border border-slate-300 bg-slate-50 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-              <span className="text-xs font-black uppercase text-slate-700 tracking-wider">
+          <div className="max-w-5xl mx-auto mt-4 p-4 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+              <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider">
                 Quick Document Editor
               </span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 Changes update the preview instantly & will be preserved on PDF export
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Quotation No.
                 </label>
                 <input
                   type="text"
                   value={data.quotationNo}
                   onChange={(e) => setData({ ...data, quotationNo: e.target.value })}
-                  className="w-full text-xs font-medium bg-white border border-slate-300 rounded p-1.5 text-slate-900"
+                  className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded p-1.5 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Quotation Date
                 </label>
                 <input
                   type="text"
                   value={data.quotationDate}
                   onChange={(e) => setData({ ...data, quotationDate: e.target.value })}
-                  className="w-full text-xs font-medium bg-white border border-slate-300 rounded p-1.5 text-slate-900"
+                  className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded p-1.5 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Expiry Date
                 </label>
                 <input
                   type="text"
                   value={data.expiryDate}
                   onChange={(e) => setData({ ...data, expiryDate: e.target.value })}
-                  className="w-full text-xs font-medium bg-white border border-slate-300 rounded p-1.5 text-slate-900"
+                  className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded p-1.5 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Bill To (Client / Company Name)
                 </label>
                 <input
                   type="text"
                   value={data.billToName}
                   onChange={(e) => setData({ ...data, billToName: e.target.value })}
-                  className="w-full text-xs font-medium bg-white border border-slate-300 rounded p-1.5 text-slate-900"
+                  className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded p-1.5 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Contact Number(s)
                 </label>
                 <input
                   type="text"
                   value={data.billToContact}
                   onChange={(e) => setData({ ...data, billToContact: e.target.value })}
-                  className="w-full text-xs font-medium bg-white border border-slate-300 rounded p-1.5 text-slate-900"
+                  className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded p-1.5 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-3">
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-800">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Line Items ({data.items.length})
                 </span>
                 <button
                   type="button"
                   onClick={handleAddItem}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:underline"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   <Plus className="h-3 w-3" /> Add Service
                 </button>
@@ -413,34 +413,34 @@ export function QuotationDocument({
 
               <div className="space-y-3">
                 {data.items.map((item, idx) => (
-                  <div key={item.id} className="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                  <div key={item.id} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500 w-5">#{idx + 1}</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-5">#{idx + 1}</span>
                       <input
                         type="text"
                         value={item.title}
                         onChange={(e) => handleItemChange(idx, "title", e.target.value)}
                         placeholder="Service Category Title"
-                        className="flex-1 text-xs font-bold text-slate-900 border border-slate-300 rounded p-1"
+                        className="flex-1 text-xs font-bold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded p-1"
                       />
                       <input
                         type="text"
                         value={item.qty}
                         onChange={(e) => handleItemChange(idx, "qty", e.target.value)}
                         placeholder="1 UOM"
-                        className="w-20 text-xs text-center border border-slate-300 rounded p-1"
+                        className="w-20 text-xs text-center border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded p-1"
                       />
                       <input
                         type="number"
                         value={item.rate}
                         onChange={(e) => handleItemChange(idx, "rate", Number(e.target.value))}
                         placeholder="Rate"
-                        className="w-24 text-xs text-right border border-slate-300 rounded p-1"
+                        className="w-24 text-xs text-right border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded p-1"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(idx)}
-                        className="text-rose-600 hover:text-rose-800 p-1"
+                        className="text-rose-600 dark:text-rose-400 hover:text-rose-800 p-1"
                         title="Remove service row"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

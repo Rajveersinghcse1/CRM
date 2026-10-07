@@ -13,28 +13,28 @@ export default async function ActivitiesPage() {
   const canAdd = canMutateSales(role);
 
   const TYPE_ICONS: Record<string, { icon: any; color: string }> = {
-    call: { icon: Phone, color: "text-blue-600 bg-blue-100" },
-    meeting: { icon: Users, color: "text-purple-600 bg-purple-100" },
-    whatsapp: { icon: MessageSquare, color: "text-emerald-600 bg-emerald-100" },
-    email: { icon: Mail, color: "text-amber-600 bg-amber-100" },
-    follow_up: { icon: Calendar, color: "text-indigo-600 bg-indigo-100" },
-    note: { icon: FileText, color: "text-slate-600 bg-slate-100" },
+    call: { icon: Phone, color: "text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/60" },
+    meeting: { icon: Users, color: "text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60" },
+    whatsapp: { icon: MessageSquare, color: "text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60" },
+    email: { icon: Mail, color: "text-amber-600 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60" },
+    follow_up: { icon: Calendar, color: "text-indigo-600 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950/60" },
+    note: { icon: FileText, color: "text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800" },
   };
 
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b-2 border-[#1E293B]/10 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-full bg-pink-100 border-2 border-[#1E293B]">
-              <Activity className="h-4 w-4 text-pink-700" strokeWidth={2.5} />
+            <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-950/60 border-2 border-[#1E293B] dark:border-slate-700">
+              <Activity className="h-4 w-4 text-pink-700 dark:text-pink-300" strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B]">
+            <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-[#1E293B] dark:text-slate-100">
               Activity & Interaction Timeline
             </h2>
           </div>
-          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
+          <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
             Chronological audit of calls, client meetings, WhatsApp messages, emails, and follow-ups.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default async function ActivitiesPage() {
       </div>
 
       {/* Activity Timeline Card */}
-      <div className="rounded-2xl border-2 border-[#1E293B] bg-white p-6 shadow-pop">
+      <div className="rounded-2xl border-2 border-[#1E293B] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-pop">
         <div className="space-y-6">
           {activities.map((act) => {
             const typeConfig = TYPE_ICONS[act.type] || TYPE_ICONS.note;
@@ -51,15 +51,15 @@ export default async function ActivitiesPage() {
             return (
               <div key={act.id} className="flex items-start gap-4">
                 <div
-                  className={`h-10 w-10 rounded-xl border-2 border-[#1E293B] flex items-center justify-center shrink-0 shadow-pop-sm ${typeConfig.color}`}
+                  className={`h-10 w-10 rounded-xl border-2 border-[#1E293B] dark:border-slate-700 flex items-center justify-center shrink-0 shadow-pop-sm ${typeConfig.color}`}
                 >
                   <Icon className="h-4 w-4" strokeWidth={2.5} />
                 </div>
-                <div className="flex-1 min-w-0 border-b-2 border-slate-100 pb-4">
+                <div className="flex-1 min-w-0 border-b-2 border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h4 className="font-bold text-sm text-[#1E293B]">{act.title}</h4>
+                    <h4 className="font-bold text-sm text-[#1E293B] dark:text-slate-100">{act.title}</h4>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-400">
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
                         {new Date(act.activity_date).toLocaleString()}
                       </span>
                       {canAdd && (
@@ -71,7 +71,7 @@ export default async function ActivitiesPage() {
                     </div>
                   </div>
                   {act.description && (
-                    <p className="mt-1 text-xs text-slate-600 font-medium leading-relaxed">
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                       {act.description}
                     </p>
                   )}
